@@ -4,13 +4,7 @@
 // Runs command line scripts
 // man execl
 #include <unistd.h>
-#include <fcntl.h>
-// Used for determining stacktrace
-// man backtrace
-#include <execinfo.h>
 #include <sys/wait.h>
-
-#include "assert.h"
 
 #define BUFF_SIZE 128
 
@@ -51,7 +45,7 @@ char** getFuncs(char* file_path) {
 		closePipe(nestedPipefd[1]);
 
 		sysErrorHandler(
-				execl("/usr/bin/nm", "nm", "-f", "sysv", "examples/coop", (char*) NULL),\
+				execlp("nm", "nm", "-f", "sysv", file_path, (char*) NULL),\
 				"Failed to execute nm\n");
 	}
 	else {
@@ -69,7 +63,7 @@ char** getFuncs(char* file_path) {
 			closePipe(nestedPipefd[1]);
 
 			sysErrorHandler(\
-				execl("/usr/bin/awk", "awk", "-F|", "$3 ~ /T/ && $7 ~ /.text/ {print}", (char*) NULL),\
+				execlp("awk", "awk", "-F|", "$1 !~ /^_start\\s*/ && $3 ~ /T/ && $7 ~ /.text/ {print}", (char*) NULL),\
 				"Failed to execute awk");
 		}
 		else {
