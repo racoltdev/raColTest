@@ -1,8 +1,6 @@
-// raColTest main
+// No tests, but as of e30f8a2, this seems correct
 #include <stdlib.h>
 #include <stdio.h>
-// Runs command line scripts
-// man execl
 #include <unistd.h>
 #include <sys/wait.h>
 
@@ -85,8 +83,4 @@ char** getFuncs(char* file_path) {
 	}
 	fclose(cmd_output);
 	return 0;
-}
-
-int main() {
-	getFuncs("examples/coop");
 }
