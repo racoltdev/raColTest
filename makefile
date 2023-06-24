@@ -6,17 +6,17 @@ TEST_ARGS := -rqU
 
 CC := gcc
 SOURCE_DIRECTORIES := src/
-TESTS_DIRECTORIES := tests/
-INCLUDE := ${SOURCE_DIRECTORIES:%=-I%} ${TESTS_DIRECTORIES:%=-I%}
+TEST_DIRECTORY := tests/
+INCLUDE := ${SOURCE_DIRECTORIES:%=-I%} ${TEST_DIRECTORY:%=-I%}
 
 SOURCES := $(shell for f in $(SOURCE_DIRECTORIES); do find $$f | grep '\.c'; done)
 OBJECTS := $(SOURCES:%.c=$(BUILD_DIR)/%.o)
-TEST_SOURCES := $(shell for f in $(TESTS_DIRECTORIES); do find $$f | grep '\.c'; done)
+TEST_SOURCES := $(shell find $(TEST_DIRECTORY) | grep '\.c')
 TEST_OBJECTS := $(TEST_SOURCES:%.c=$(BUILD_DIR)/%.o)
 DEPFILES := $(OBJECTS:%.o=%.d) $(TEST_OBJECTS:%.o=%.d)
 -include $(DEPFILES)
 
-$(BUILD_DIR)/tests/%.o: $(TESTS_DIRECTORIES)%.c
+$(BUILD_DIR)/tests/%.o: $(TEST_DIRECTORY)%.c
 	@echo '[CXX] $(<F)'
 	@mkdir -p '$(@D)'
 	$(CC) $(INCLUDE) -MMD -MP -c '$<' -o '$@'
@@ -27,9 +27,7 @@ build_tests: $(TEST_OBJECTS)
 
 test: build_tests
 	@echo '[Running tests.................]'
-	# Tests must log data. All logs should be marked as PASS/FAIL and
-	# test type: failed compilation, local test run, attempted commit, commit, remote push
-	$(TEST_EXECUTABLE) $(TEST_ARGS) $(BUILD_DIR)
+	./$(TEST_EXECUTABLE) $(TEST_ARGS) $(BUILD_DIR)
 
 $(BUILD_DIR)/src/%.o: $(SOURCE_DIRECTORIES)%.c
 	@echo '[CXX] $(<F)'
