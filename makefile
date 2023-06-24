@@ -1,18 +1,17 @@
 TARGET_NAME := raColTest
 BUILD_DIR := build
-TEST_EXECUTABLE := run_test
-# report, quiet on pass, Update coverage
-TEST_ARGS := -rqU
 
 CC := gcc
 SOURCE_DIRECTORIES := src/
 TEST_DIRECTORY := tests/
+TEST_BIN := $(BUILD_DIR)/test_bin/
 INCLUDE := ${SOURCE_DIRECTORIES:%=-I%} ${TEST_DIRECTORY:%=-I%}
 
 SOURCES := $(shell for f in $(SOURCE_DIRECTORIES); do find $$f | grep '\.c'; done)
 OBJECTS := $(SOURCES:%.c=$(BUILD_DIR)/%.o)
 TEST_SOURCES := $(shell find $(TEST_DIRECTORY) | grep '\.c')
 TEST_OBJECTS := $(TEST_SOURCES:%.c=$(BUILD_DIR)/%.o)
+TEST_NAMES := $(TEST_SOURCES:$(TEST_DIRECTORY)%.c=$(TEST_BIN)%)
 DEPFILES := $(OBJECTS:%.o=%.d) $(TEST_OBJECTS:%.o=%.d)
 -include $(DEPFILES)
 
@@ -21,13 +20,16 @@ $(BUILD_DIR)/tests/%.o: $(TEST_DIRECTORY)%.c
 	@mkdir -p '$(@D)'
 	$(CC) $(INCLUDE) -MMD -MP -c '$<' -o '$@'
 
-build_tests: $(TEST_OBJECTS)
+$(TEST_BIN)%: $(TEST_OBJECTS)
 	@echo '[LD] Linking test suite........]'
-	$(CC) $(TEST_OBJECTS) -o $(TEST_EXECUTABLE)
+	@mkdir -p $(TEST_BIN)
+	$(CC) $(INCLUDE) '$<' -o '$@'
 
-test: build_tests
+build_tests: $(TEST_NAMES)
+
+test: $(TEST_NAMES) build_tests
 	@echo '[Running tests.................]'
-	./$(TEST_EXECUTABLE) $(TEST_ARGS) $(BUILD_DIR)
+	$< $(BUILD_DIR)
 
 $(BUILD_DIR)/src/%.o: $(SOURCE_DIRECTORIES)%.c
 	@echo '[CXX] $(<F)'
