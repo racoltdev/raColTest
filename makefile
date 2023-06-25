@@ -1,48 +1,39 @@
-TARGET_NAME := raColTest
-BUILD_DIR := build
+TARGET := raColTest
+BUILD_DIR := build/
+SOURCE_DIR := src/
+TEST_DIR := testsrc/
+INCLUDE_DIRS :=
+LIBS :=
+CXX := gcc
 
-CC := gcc
-SOURCE_DIRECTORIES := src/
-TEST_DIRECTORY := tests/
-TEST_BIN := $(BUILD_DIR)/test_bin/
-INCLUDE := ${SOURCE_DIRECTORIES:%=-I%} ${TEST_DIRECTORY:%=-I%}
 
-SOURCES := $(shell for f in $(SOURCE_DIRECTORIES); do find $$f | grep '\.c'; done)
-OBJECTS := $(SOURCES:%.c=$(BUILD_DIR)/%.o)
-TEST_SOURCES := $(shell find $(TEST_DIRECTORY) | grep '\.c')
-TEST_OBJECTS := $(TEST_SOURCES:%.c=$(BUILD_DIR)/%.o)
-TEST_NAMES := $(TEST_SOURCES:$(TEST_DIRECTORY)%.c=$(TEST_BIN)%)
-DEPFILES := $(OBJECTS:%.o=%.d) $(TEST_OBJECTS:%.o=%.d)
+LDFLAGS := $(CXXFLAGS) $(addprefix -l, $(LIBS))
+CXXFLAGS += -MMD -MP -I$(SOURCE_DIR) $(addprefix -I, $(INCLUDE_DIRS))
+THIS_MAKEFILE := $(firstword $(MAKEFILE_LIST))
+SOURCES != find $(SOURCE_DIR) -name '*.c' ! -wholename 'src/main.c'
+OBJECTS := ${SOURCES:%.c=$(BUILD_DIR)%.o}
+TEST_SOURCES != find $(TEST_DIR) -name '*.c'
+TESTS := ${TEST_SOURCES:$(TEST_DIR)%.c=tests/%}
+DEPFILES := ${OBJECTS:%.o=%.d}
 -include $(DEPFILES)
 
-$(BUILD_DIR)/tests/%.o: $(TEST_DIRECTORY)%.c
-	@echo '[CXX] $(<F)'
-	@mkdir -p '$(@D)'
-	$(CC) $(INCLUDE) -MMD -MP -c '$<' -o '$@'
+$(BUILD_DIR)%.o: %.c $(THIS_MAKEFILE)
+	@mkdir -p "${@D}"
+	@echo "[CXX] ${@F}"
+	@$(CXX) $(CXXFLAGS) -c "$<" -o "$@"
 
-$(TEST_BIN)%: $(TEST_OBJECTS)
-	@echo '[LD] Linking test suite........]'
-	@mkdir -p $(TEST_BIN)
-	$(CC) $(INCLUDE) '$<' -o '$@'
+tests/%: $(BUILD_DIR)$(TEST_DIR)%.o $(OBJECTS)
+	@echo "[CXX] ${@F}"
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
-build_tests: $(TEST_NAMES)
+$(TARGET): $(OBJECTS) $(BUILD_DIR)src/main.o
+	@echo "[LD] ${@F}"
+	@$(CXX) $^ $(LDFLAGS) -o $(TARGET)
 
-test: $(TEST_NAMES) build_tests
-	@echo '[Running tests.................]'
-	$< $(BUILD_DIR)
-
-$(BUILD_DIR)/src/%.o: $(SOURCE_DIRECTORIES)%.c
-	@echo '[CXX] $(<F)'
-	@mkdir -p '$(@D)'
-	$(CC) $(INCLUDE) -MMD -MP -c '$<' -o '$@'
-
-$(TARGET_NAME): $(OBJECTS)
-	@echo '[Linking.......................]'
-	$(CC) $(OBJECTS) -o $(TARGET_NAME)
-
-all: $(TARGET_NAME) test
+all: $(TARGET) $(TESTS)
 
 clean:
-	rm -rf build/
+	rm -rf $(TARGET)
+	rm -rf $(BUILD_DIR)
 
-# .SILENT:
+.PHONY: clean all
