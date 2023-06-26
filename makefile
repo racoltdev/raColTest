@@ -2,33 +2,29 @@ TARGET := raColTest
 BUILD_DIR := build/
 SOURCE_DIR := src/
 TEST_DIR := testsrc/
-INCLUDE_DIRS :=
-LIBS :=
-CXX := gcc
+CXXFLAGS := --std=c++20 -g3 -Wall -Wextra -fPIC
 
-
-LDFLAGS := $(CXXFLAGS) $(addprefix -l, $(LIBS))
-CXXFLAGS += -MMD -MP -I$(SOURCE_DIR) $(addprefix -I, $(INCLUDE_DIRS))
+CXXFLAGS += -MMD -MP -I$(SOURCE_DIR)
 THIS_MAKEFILE := $(firstword $(MAKEFILE_LIST))
-SOURCES != find $(SOURCE_DIR) -name '*.c' ! -wholename 'src/main.c'
-OBJECTS := ${SOURCES:%.c=$(BUILD_DIR)%.o}
-TEST_SOURCES != find $(TEST_DIR) -name '*.c'
-TESTS := ${TEST_SOURCES:$(TEST_DIR)%.c=tests/%}
+SOURCES != find $(SOURCE_DIR) -name '*.cpp' ! -wholename 'src/main.cpp'
+OBJECTS := ${SOURCES:%.cpp=$(BUILD_DIR)%.o}
+TEST_SOURCES != find $(TEST_DIR) -name '*.cpp'
+TESTS := ${TEST_SOURCES:$(TEST_DIR)%.cpp=tests/%}
 DEPFILES := ${OBJECTS:%.o=%.d}
 -include $(DEPFILES)
 
-$(BUILD_DIR)%.o: %.c $(THIS_MAKEFILE)
+$(BUILD_DIR)%.o: %.cpp $(THIS_MAKEFILE)
 	@mkdir -p "${@D}"
 	@echo "[CXX] ${@F}"
 	@$(CXX) $(CXXFLAGS) -c "$<" -o "$@"
 
 tests/%: $(BUILD_DIR)$(TEST_DIR)%.o $(OBJECTS)
 	@echo "[CXX] ${@F}"
-	@$(CXX) $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(CXXFLAGS) -o $@
 
 $(TARGET): $(OBJECTS) $(BUILD_DIR)src/main.o
 	@echo "[LD] ${@F}"
-	@$(CXX) $^ $(LDFLAGS) -o $(TARGET)
+	@$(CXX) $^ $(CXXFLAGS) -o $(TARGET)
 
 all: $(TARGET) $(TESTS)
 

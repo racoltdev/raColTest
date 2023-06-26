@@ -6,40 +6,49 @@
 #include <stdio.h>
 #include <sys/wait.h>
 
+#include "sys_utils.h"
+
 #define STRING(string) #string
 
 #define TEST(_test_name) \
 { \
-	char* raColTEST_test_name = _test_name; \
-	int _raColTEST_test_status = 0; \
-	int _raColTEST_pipefd[2]; \
-	pipe(_raColTEST_pipefd); \
-	if (!fork()) { \
-		dup2(_raColTEST_pipefd[1], STDOUT_FILENO);
+	const char* raColTest_test_name = _test_name; \
+	int _raColTest_test_status = 0; \
+	int _raColTest_pipefd[2]; \
+	rCT_sys::pipe_handler(_raColTest_pipefd); \
+	if (!rCT_sys::fork_handler()) { \
+		rCT_sys::error_handler( \
+			dup2(_raColTest_pipefd[1], STDOUT_FILENO), \
+			"dup2 failed"\
+		);
 
 #define ASSERT(conditional, details) \
-	close(_raColTEST_pipefd[0]); \
-	close(_raColTEST_pipefd[1]); \
-	if (!conditional) { \
-		printf("%s failed:\n\t", raColTEST_test_name); \
+	rCT_sys::close_handler(_raColTest_pipefd[0], "Child, pipefd[0]"); \
+	rCT_sys::close_handler(_raColTest_pipefd[1], "Child, pipefd[1]"); \
+	if (!(conditional)) { \
+		printf("%s failed:\n\t", raColTest_test_name); \
 		printf(STRING(conditional) "\n\t%s\n", details); \
 		return -1; \
 	} \
 	else { \
-		printf("%s passed\n", raColTEST_test_name); \
+		printf("%s passed\n", raColTest_test_name); \
 	} \
 
 #define END_TEST \
 	return 0;} \
 	else { \
-		close(_raColTEST_pipefd[1]); \
-		int _raColTEST_pid_status; \
-		if (wait(&_raColTEST_pid_status)) { \
-			_raColTEST_test_status = 0; \
-			printPipe(_raColTEST_pipefd); \
+		rCT_sys::close_handler(_raColTest_pipefd[1], "Parent, pipefd[1]"); \
+		int _raColTest_pid_status; \
+		int waitStatus = rCT_sys::error_handler( \
+			wait(&_raColTest_pid_status), \
+			"Wait failed" \
+		); \
+		if (waitStatus) { \
+			_raColTest_test_status = 0; \
+			rCT_sys::print_pipe(_raColTest_pipefd); \
 			/* print_stacktrace; \ print captured_stdout; \ log all data; \ */ } \
 			else { \
-				_raColTEST_test_status = 1; \
+				_raColTest_test_status = 1; \
 			} \
 	} \
 }

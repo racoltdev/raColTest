@@ -12,6 +12,7 @@ int main() {
 
 	TEST("Second include")
 	getFuncs("raColTest");
+	const char* output = "true";
 	ASSERT(output != NULL, "Linking failed")
 	END_TEST
 }

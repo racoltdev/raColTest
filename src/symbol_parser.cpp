@@ -18,7 +18,7 @@ int closePipe(int fd) {
 	return sysErrorHandler(close(fd), "Failed to close pipe");
 }
 
-char** getFuncs(char* file_path) {
+char** getFuncs(const char* file_path) {
 	pid_t pid;
 	int pipefd[2];
 	int nestedPipefd[2];
