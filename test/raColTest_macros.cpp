@@ -1,5 +1,6 @@
 #include "../src/raColTest_macros.h"
-#include "../src/symbol_parser.h"
+
+#include <stdexcept>
 
 int main() {
 	TEST("Passing test")
@@ -7,15 +8,20 @@ int main() {
 	END_TEST
 
 	TEST("Failing test")
-	ASSERT(1 == 0, "This should fail")
+	ASSERT(1 == 0, "Another test should pass after this")
 	END_TEST
 
-	TEST("Print test")
-	ASSERT(true, "This should pass")
+	TEST("Continues after fail")
+	ASSERT(1 == 1, "This will never fail")
 	END_TEST
 
-	TEST("Print test2")
-	ASSERT(true, "This should pass")
+	TEST("Errors correctly")
+	throw std::runtime_error("Intentional test throw");
+	ASSERT(1 == 1, "This will never fail")
+	END_TEST
+
+	TEST("Continues after error")
+	ASSERT(1 == 1, "This will never fail")
 	END_TEST
 
 	//TEST("Second include")
