@@ -46,19 +46,10 @@
 		if (waitStatus) { \
 			_raColTest_test_status = 0; \
 			rCT_sys::print_pipe(_raColTest_pipefd); \
+			rCT_sys::close_handler(_raColTest_pipefd[0], "Parent, pipefd[0]"); \
 			/* print_stacktrace; \ print captured_stdout; \ log all data; \ */ } \
 			else { \
 				_raColTest_test_status = 1; \
 			} \
 	} \
-}
-
-void printPipe(int* pipefd) {
-	const short BUFF_SIZE = 128;
-	char buff[BUFF_SIZE];
-	FILE* cmd_output = fdopen(pipefd[0], "r");
-		while(fgets(buff, sizeof buff, cmd_output)) {
-			printf("%s", buff);
-		}
-	fclose(cmd_output);
 }

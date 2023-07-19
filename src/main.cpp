@@ -1,3 +1,5 @@
+#include "test_runner.h"
+
 int main() {
-	return 0;
+	test_runner();
 }
