@@ -21,6 +21,7 @@ $(BUILD_DIR)%.o: %.cpp $(THIS_MAKEFILE)
 
 $(TEST_BINDIR)%: $(BUILD_DIR)$(TEST_DIR)%.o $(OBJECTS)
 	@echo "[CXX] ${@F}"
+	@mkdir -p $(TEST_BINDIR)
 	@$(CXX) $^ $(CXXFLAGS) -o $@
 
 $(TARGET): $(OBJECTS) $(BUILD_DIR)src/main.o
@@ -32,5 +33,6 @@ all: $(TARGET) $(TESTS)
 clean:
 	rm -rf $(TARGET)
 	rm -rf $(BUILD_DIR)
+	rm -rf $(TEST_BINDIR)
 
 .PHONY: clean all
