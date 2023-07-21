@@ -45,6 +45,6 @@ namespace rCT_sys {
 
 	int close_handler(int fd, const char* file_name) {
 		const char* msg = "Failed to close fd ";
-		io_handler(close(fd), file_name, msg);
+		return io_handler(close(fd), file_name, msg);
 	}
 }

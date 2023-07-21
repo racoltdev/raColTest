@@ -6,7 +6,7 @@
 
 #define BUFF_SIZE 128
 
-int sysErrorHandler(int status, char* msg) {
+int sysErrorHandler(int status, const char* msg) {
 	if (status == -1) {
 		perror(msg);
 		exit(-1);

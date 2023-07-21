@@ -9,7 +9,6 @@
 
 std::vector<std::string> collect_tests() {
 	std::vector<std::string> test_names;
-	bool found_test = false;
 	for (const auto& entry : std::filesystem::directory_iterator("test")) {
 		const std::string p = std::filesystem::absolute(entry.path());
 		test_names.push_back(p);
