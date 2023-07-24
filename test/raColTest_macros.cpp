@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-int main() {
+int main(int , char** argv) {
 	TEST("Passing test")
 	ASSERT(1 == 1, "This should pass")
 	END_TEST

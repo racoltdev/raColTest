@@ -1,6 +1,5 @@
 #ifndef sys_utils_h
 #define sys_utils_h
-#endif
 
 namespace rCT_sys {
 	int error_handler(int status, const char* msg);
@@ -10,3 +9,5 @@ namespace rCT_sys {
 	void print_pipe(int* pipefd);
 	int io_handler(int status, const char* file_name, const char* msg);
 }
+
+#endif
