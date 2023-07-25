@@ -9,12 +9,22 @@
 
 std::vector<std::string> collect_tests() {
 	std::vector<std::string> test_names;
-	for (const auto& entry : std::filesystem::directory_iterator("test")) {
-		const std::string p = std::filesystem::absolute(entry.path());
-		test_names.push_back(p);
-		printf("\tCollected %s\n", p.c_str());
+	try {
+		for (const auto& entry : std::filesystem::directory_iterator("test")) {
+			const std::string p = std::filesystem::absolute(entry.path());
+			test_names.push_back(p);
+			printf("\tCollected %s\n", p.c_str());
+		}
+		if (test_names.empty()) {
+			printf("\tNo tests were collected!");
+		}
+		return test_names;
 	}
-	return test_names;
+	catch (std::filesystem::filesystem_error& e) {
+		puts(e.what());
+		puts("raColTest encountered an error. You must have a test directory");
+		exit(-1);
+	}
 }
 
 int exec_file(char* path) {

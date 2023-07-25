@@ -18,22 +18,22 @@
 
 #define ASSERT(conditional, details) \
 		if (!(conditional)) { \
-			printf("\"%s\" failed:\n\t", raColTest_test_name); \
+			printf("\t\t\"%s\" failed:\n", raColTest_test_name); \
 			std::string msg = STRING(conditional); \
 			msg += "\t"; \
 			msg += details; \
 			logger::log(logger::FAIL, argv[0], raColTest_test_name, msg.c_str()); \
-			printf(STRING(conditional) "\n\t%s\n", details); \
+			printf("\t\t\t" STRING(conditional) "\n\t\t\t%s\n", details); \
 		} \
 		else { \
-			printf("\"%s\" passed\n", raColTest_test_name); \
+			printf("\t\t\"%s\" passed\n", raColTest_test_name); \
 			logger::log(logger::PASS, argv[0], raColTest_test_name, "\0"); \
 		} \
 
 #define END_TEST \
 	} \
 	catch(std::exception& e) { \
-		printf("\"%s\" encountered an exception:\n\t%s\n", raColTest_test_name, e.what()); \
+		printf("\t\t\"%s\" encountered an exception:\n\t\t\t%s\n", raColTest_test_name, e.what()); \
 		logger::log(logger::ERROR, argv[0], raColTest_test_name, e.what()); \
 		logger::log(logger::STD_OUT, argv[0], raColTest_test_name, "stdout placeholder"); \
 		/* _raColTest_test_status = 1; */\
