@@ -37,7 +37,7 @@ int exec_file(char* path) {
 	if (pid == 0) {
 		rCT_sys::error_handler(\
 			dup2(pipefd[1], STDOUT_FILENO), \
-			"[raColTest] Cannot dup pipefd to stdout" \
+			"Cannot dup pipefd to stdout" \
 		);
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 		rCT_sys::close_handler(pipefd[1], "pipefd");
@@ -50,12 +50,14 @@ int exec_file(char* path) {
 		int status;
 		rCT_sys::error_handler( \
 			waitpid(pid, &status, 0), \
-			"[raColTest] Error while waiting for test to finish" \
+			"\t\tError while waiting for test to finish" \
 		);
 		rCT_sys::close_handler(pipefd[1], "pipefd");
-		// TODO pipe doesn't clear between reads, resulting in echoing of all previous prints
-		//		the buffer is cleared correctly
-		rCT_sys::print_pipe(pipefd);
+		if (WIFSIGNALED(status)) {
+			printf("\t\tTest was stopped by signal: %d\n", WTERMSIG(status));
+		} else {
+			rCT_sys::print_pipe(pipefd);
+		}
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 	}
 	return 0;
