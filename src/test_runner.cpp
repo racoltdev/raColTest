@@ -27,6 +27,23 @@ std::vector<std::string> collect_tests() {
 	}
 }
 
+char* isolate_fname(char* path) {
+	size_t fname_start = 0;
+	size_t path_len = strlen(path);
+	// Always safe to start search at [-2]
+	for (int i = path_len - 2; i >= 0; i--) {
+		char delim = '/';
+		if (path[i] == delim) {
+			fname_start = i + 1;
+			break;
+		}
+	}
+	size_t fname_size = path_len - fname_start;
+	char* fname = (char*) malloc(sizeof(char) * fname_size);
+	strcpy(fname, path + fname_start);
+	return fname;
+}
+
 int exec_file(char* path) {
 	printf("\tExecuting %s.........", path);
 	pid_t pid;
@@ -41,8 +58,10 @@ int exec_file(char* path) {
 		);
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 		rCT_sys::close_handler(pipefd[1], "pipefd");
+		// Normally I should free this, but this execution env gets wiped in the next line anyways
+		char* fname = isolate_fname(path);
 		rCT_sys::error_handler( \
-			execl(path, path, NULL), \
+			execl(path, fname, NULL), \
 			"FAIL\n\t\tFailed to execute test file" \
 		);
 	} else {
