@@ -44,7 +44,7 @@ char* isolate_fname(char* path) {
 	return fname;
 }
 
-int exec_file(char* path) {
+void exec_file(char* path) {
 	printf("\tExecuting %s.........", path);
 	pid_t pid;
 	int pipefd[2];
@@ -79,10 +79,9 @@ int exec_file(char* path) {
 		}
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 	}
-	return 0;
 }
 
-int exec_test(std::string& path) {
+void exec_test(std::string& path) {
 	const std::string test = "test";
 	std::string::size_type index = path.find(test);
 	path.replace(index, test.length(), "testbin");
@@ -91,15 +90,13 @@ int exec_test(std::string& path) {
 	// Remove '.cpp'
 	test_path[length - 4] = '\0';
 	exec_file(test_path);
-	return 0;
 }
 
-int test_runner() {
+void test_runner() {
 	printf("Collecting tests.......\n");
 	std::vector<std::string> tests = collect_tests();
 	printf("Executing tests........\n");
 	for (std::string& test : tests) {
 		exec_test(test);
 	}
-	return 0;
 }

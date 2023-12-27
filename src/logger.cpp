@@ -1,6 +1,7 @@
 #include "logger.h"
 
-#include <semaphore>
+// TODO if i ever get multithreading running, this NEEDS semaphores
+//#include <semaphore>
 #include <time.h>
 
 #define DELIM ":-:"
