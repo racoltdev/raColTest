@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/wait.h>
+#include <string>
 // TODO if i ever get multithreading running, this needs semaphores to interact with logger
 //#include <semaphore>
 
