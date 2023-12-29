@@ -5,18 +5,22 @@
 #include <time.h>
 #include <stdio.h>
 #include <vector>
+#include <string.h>
+#include <string>
+#include <stdlib.h>
+#include <filesystem>
 
 #include "sys_utils.h"
 
 #define DELIM ":-:"
-#define BUFF_SIZE 64
+#define BUFF_SIZE 4000
 
 struct LogLine {
 	time_t time;
-	char test_file;
+	const char* test_file;
 	logger::data_type type;
-	char test_name;
-	char* data;
+	const char* test_name;
+	const char* data;
 };
 
 const char* log_line_format = "%ld" DELIM "%s" DELIM "%d" DELIM "%s" DELIM "%s\n";
@@ -35,8 +39,8 @@ char next_char(FILE* log_file) {
 		char buffer[strlen(DELIM)];
 		fgets(buffer, strlen(DELIM), log_file);
 		// If full delim matched
-		if (strcmp(buffer, DELIM + 1)) {
-			return NULL;
+		if (!strcmp(buffer, DELIM + 1)) {
+			return 0;
 		} else {
 			fseek(log_file, -2, SEEK_CUR);
 			return c;
@@ -44,12 +48,12 @@ char next_char(FILE* log_file) {
 	}
 }
 
-void map_field_to_line(LogLine line, char* field, short num) {
-	num == 0 ? line.time = strtol(field) :
-	num == 1 ? line.test_file = field    :
-	num == 2 ? line.type = atoi(field)   :
-	num == 3 ? line.test_name = field    :
-	           line.data = field;
+void map_field_to_line(LogLine line, const char* field, short num) {
+	if(num == 0) {line.time = strtol(field, NULL, 0);}
+	if(num == 1) {line.test_file = field;}
+	if(num == 2) {line.type = static_cast<logger::data_type>(atoi(field));}
+	if(num == 3) {line.test_name = field;}
+	else {line.data = field;}
 }
 
 // I'm not gonna do error checking here. Don't edit the log file!
@@ -57,15 +61,15 @@ LogLine deserialize_line(FILE* log_file, long int line_len) {
 	LogLine output;
 
 	for (int i = 0; i < line_len; i++) {
-		std::vector<char> field;
+		std::string field;
 		//if (field > 4) {
 		//	throw std::runtime_error("Invalid log file! Too many fields encountered");
 		//}
 		char c = next_char(log_file);
-		if (c != NULL) {
-			field.push_back(c);
+		if (c != 0) {
+			field.append(&c);
 		} else {
-			map_field_to_line(output, field, i);
+			map_field_to_line(output, field.c_str(), i);
 		}
 	}
 	printf("%s, %s\n", output.test_file, output.test_name);
@@ -81,24 +85,40 @@ int seek_prev_line(FILE* log_file) {
 	return status;
 }
 
+// 4kb is chosen because thats the default size of a buffer in linux kernel
+void fcat(const char* top_path, const char* bottom_path, const char* output_path) {
+	const char* temp_path = "temp_cat.log";
+	std::filesystem::copy(top_path, temp_path);
+
+	FILE* bottom_file = fopen(bottom_path, "r");
+	FILE* temp_log = fopen(temp_path, "a");
+
+	char* buff[BUFF_SIZE];
+	while (fread(buff, sizeof(char), BUFF_SIZE, bottom_file) == BUFF_SIZE) {
+		fwrite(buff, sizeof(char), BUFF_SIZE, temp_log);
+	}
+	fclose(bottom_file);
+	fclose(temp_log);
+	std::filesystem::rename(temp_path, output_path);
+}
+
 // TODO Might want to sanitize input later
 // TODO may need this to work with ms precision if tests are run back to back
-void logger::log(logger::data_type msg_type,  char* test_file, const char* test_name, const char* data) {
-	FILE* log_file = fopen(log_path, "a");
+void logger::log(logger::data_type msg_type, const char* test_file, const char* test_name, const char* data) {
+	const char* line_path = "line.log";
+	FILE* line_log = fopen(line_path, "w");
 	time_t sec = time(NULL);
-	fprintf(log_file, log_line_format, sec, test_file, msg_type, test_name, data);
-	fclose(log_file);
+
+	fprintf(line_log, log_line_format, sec, test_file, msg_type, test_name, data);
+	fclose(line_log);
+	fcat(line_path, log_path, log_path);
+	rCT_sys::io_handler(std::remove(line_path), line_path, "Failed to remove ");
 }
 
 // TODO every fseek is a very expensive operation bc it wipes the stdio buffer. Consider replacing fseek, searching in order, or using a more conventional parser to avoid this
 void logger::display(time_t start_time, time_t end_time) {
 	std::vector<LogLine> lines;
 	FILE* log_file = fopen(log_path, "r");
-	rCT_sys::error_handler( \
-		fseek(log_file, 0, SEEK_END), \
-		"Could not seek to position in log file" \
-	);
-	// Assume future issues with calling fseek are because I'm at the start or end of file. AKA not catastrophic and I don't need to exit
 	long int next_end_pos = ftell(log_file);
 	do {
 		int status = seek_prev_line(log_file);

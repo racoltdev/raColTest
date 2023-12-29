@@ -11,7 +11,7 @@ namespace logger {
 	// if data_type < 2 then test failed
 	enum data_type {ERROR, FAIL, PASS, STD_OUT};
 
-	void log(data_type msg_type, char* test_file, const char* test_name, const char* data);
+	void log(data_type msg_type, const char* test_file, const char* test_name, const char* data);
 	void display(time_t start_time, time_t end_time);
 };
 
