@@ -4,8 +4,10 @@
 #include <iostream>
 #include <string.h>
 #include <sys/wait.h>
+#include <time.h>
 
 #include "sys_utils.h"
+#include "logger.h"
 
 std::vector<std::string> collect_tests() {
 	std::vector<std::string> test_names;
@@ -93,10 +95,13 @@ void exec_test(std::string& path) {
 }
 
 void test_runner() {
+	time_t start = time(NULL);
 	printf("Collecting tests.......\n");
 	std::vector<std::string> tests = collect_tests();
 	printf("Executing tests........\n");
 	for (std::string& test : tests) {
 		exec_test(test);
 	}
+	time_t end = time(NULL);
+	logger::display(start, end);
 }
