@@ -17,10 +17,10 @@
 
 struct LogLine {
 	time_t time;
-	const char* test_file;
+	char test_file[64] = {};
 	logger::data_type type;
-	const char* test_name;
-	const char* data;
+	char test_name[64] = {};
+	char data[128] = {};
 };
 
 const char* log_line_format = "%ld" DELIM "%s" DELIM "%d" DELIM "%s" DELIM "%s\n";
@@ -29,9 +29,9 @@ const char* log_path = "./project.log";
 // Yes this is a custom parser because I didn't want to read a line in, and then split it, and then read the splits into LogLine
 // That's two more passes over strings than needed!
 char next_char(FILE* log_file) {
-	char c;
+	char c = fgetc(log_file);
 	// If delim not encounterd
-	if ((c = fgetc(log_file)) != DELIM[0]) {
+	if (c != DELIM[0]) {
 		return c;
 	}
 	// If delim may have been encountered
@@ -48,41 +48,29 @@ char next_char(FILE* log_file) {
 	}
 }
 
-void map_field_to_line(LogLine line, const char* field, short num) {
-	if(num == 0) {line.time = strtol(field, NULL, 0);}
-	if(num == 1) {line.test_file = field;}
-	if(num == 2) {line.type = static_cast<logger::data_type>(atoi(field));}
-	if(num == 3) {line.test_name = field;}
-	else {line.data = field;}
+void map_field_to_line(LogLine* line, const char* field, short num) {
+	if     (num == 0) {line->time = strtol(field, NULL, 0);}
+	else if(num == 1) {strcpy(line->test_file, field);}
+	else if(num == 2) {line->type = static_cast<logger::data_type>(atoi(field));}
+	else if(num == 3) {strcpy(line->test_name, field);}
+	else              {strcpy(line->data, field);}
 }
 
 // I'm not gonna do error checking here. Don't edit the log file!
-LogLine deserialize_line(FILE* log_file, long int line_len) {
+LogLine deserialize_line(FILE* log_file) {
 	LogLine output;
-
-	for (int i = 0; i < line_len; i++) {
-		std::string field;
-		//if (field > 4) {
-		//	throw std::runtime_error("Invalid log file! Too many fields encountered");
-		//}
+	int field_num = 0;
+	std::string field;
+	while (field_num < 5) {
 		char c = next_char(log_file);
-		if (c != 0) {
-			field.append(&c);
+		if (c > 0 && c != '\n') {
+			field.push_back(c);
 		} else {
-			map_field_to_line(output, field.c_str(), i);
+			map_field_to_line(&output, field.c_str(), field_num++);
+			field = "";
 		}
 	}
-	printf("%s, %s\n", output.test_file, output.test_name);
 	return output;
-}
-
-int seek_prev_line(FILE* log_file) {
-	// always seek back before scan bc current char is expected to be '\n'
-	int status = 0;
-	do {
-		status = fseek(log_file, -2, SEEK_CUR);
-	} while(fgetc(log_file) != '\n' && status == 0);
-	return status;
 }
 
 // 4kb is chosen because thats the default size of a buffer in linux kernel
@@ -119,26 +107,11 @@ void logger::log(logger::data_type msg_type, const char* test_file, const char* 
 void logger::display(time_t start_time, time_t end_time) {
 	std::vector<LogLine> lines;
 	FILE* log_file = fopen(log_path, "r");
-	long int next_end_pos = ftell(log_file);
 	do {
-		int status = seek_prev_line(log_file);
-		// Scanned to start of log .... most likely
-		if (status != 0) {
-			break;
-		}
-
-		long int start_pos = ftell(log_file);
-		long int line_len = start_pos - next_end_pos;
-		LogLine l = deserialize_line(log_file, line_len);
-		next_end_pos = start_pos - 1;
-
+		LogLine l = deserialize_line(log_file);
 		if (l.time <= end_time) {
 			lines.push_back(l);
 		}
-
-		long int end_pos = ftell(log_file);
-		long int offset = start_pos - end_pos;
-		fseek(log_file, offset, SEEK_CUR);
 	} while(lines.back().time >= start_time);
 
 	fclose(log_file);
