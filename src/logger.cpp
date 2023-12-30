@@ -14,6 +14,12 @@
 #define DELIM ":-:"
 #define BUFF_SIZE 4000
 
+// TODO check if using windows and swap with windows text coloring conio.h
+#define REDB "\e[0;101m"
+#define GRNB "\e[42m"
+#define RESET "\x1B[0m"
+
+// TODO made data variable size
 struct LogLine {
 	time_t time;
 	char test_file[64] = {};
@@ -56,11 +62,12 @@ void map_field_to_line(LogLine* line, const char* field, short num) {
 }
 
 // I'm not gonna do error checking here. Don't edit the log file!
+// TODO stdout_cap_files will have newlines, but I don't want to move to the next line yet. Figure that out
 LogLine deserialize_line(FILE* log_file) {
 	LogLine output;
 	int field_num = 0;
 	std::string field;
-	while (field_num < 5) {
+	while (field_num < 6) {
 		char c = next_char(log_file);
 		if (c > 0 && c != '\n') {
 			field.push_back(c);
@@ -102,7 +109,16 @@ void logger::log(logger::data_type msg_type, const char* test_file, const char* 
 	rCT_sys::io_handler(std::remove(line_path), line_path, "Failed to remove ");
 }
 
-// TODO every fseek is a very expensive operation bc it wipes the stdio buffer. Consider replacing fseek, searching in order, or using a more conventional parser to avoid this
+void logger::log_captured_stdout(const char* test_file, const char* test_name, FILE* stdout_cap_file) {
+	fseek(stdout_cap_file, 0, SEEK_END);
+	long int buff_size = ftell(stdout_cap_file);
+	char* buff = (char*) malloc(sizeof(char) * buff_size);
+	fseek(stdout_cap_file, 0, SEEK_SET);
+	fread(buff, sizeof(char), buff_size, stdout_cap_file);
+	logger::log(logger::STD_OUT, test_file, test_name, buff);
+	free(buff);
+}
+
 void logger::display(time_t start_time, time_t end_time) {
 	std::vector<LogLine> lines;
 	FILE* log_file = fopen(log_path, "r");

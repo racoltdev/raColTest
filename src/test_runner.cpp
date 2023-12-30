@@ -29,15 +29,18 @@ std::vector<std::string> collect_tests() {
 	}
 }
 
-char* isolate_fname(char* path) {
+char* isolate_fname(char* path, int parents) {
+	int children = 0;
 	size_t fname_start = 0;
 	size_t path_len = strlen(path);
+	char delim = '/';
 	// Always safe to start search at [-2]
 	for (int i = path_len - 2; i >= 0; i--) {
-		char delim = '/';
 		if (path[i] == delim) {
 			fname_start = i + 1;
-			break;
+			if (++children == parents) {
+				break;
+			}
 		}
 	}
 	size_t fname_size = path_len - fname_start;
@@ -47,7 +50,9 @@ char* isolate_fname(char* path) {
 }
 
 void exec_file(char* path) {
-	printf("\tExecuting %s.........", path);
+	// Normally I should free this, but this execution env gets wiped in the next line anyways
+	char* fname = isolate_fname(path, 2);
+	printf("\tExecuting %s.........", fname);
 	pid_t pid;
 	int pipefd[2];
 	rCT_sys::pipe_handler(pipefd);
@@ -60,24 +65,23 @@ void exec_file(char* path) {
 		);
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 		rCT_sys::close_handler(pipefd[1], "pipefd");
-		// Normally I should free this, but this execution env gets wiped in the next line anyways
-		char* fname = isolate_fname(path);
 		rCT_sys::error_handler( \
 			execl(path, fname, NULL), \
 			"FAIL\n\t\tFailed to execute test file" \
 		);
 	} else {
-		printf("\n");
+		printf("\n\t\t");
 		int status;
 		rCT_sys::error_handler( \
 			waitpid(pid, &status, 0), \
-			"\t\tError while waiting for test to finish" \
+			"Error while waiting for test to finish" \
 		);
 		rCT_sys::close_handler(pipefd[1], "pipefd");
 		if (WIFSIGNALED(status)) {
-			printf("\t\tTest was stopped by signal: %d\n", WTERMSIG(status));
+			printf("Test was stopped by signal: %d\n", WTERMSIG(status));
 		} else {
 			rCT_sys::print_pipe(pipefd);
+			printf("\n");
 		}
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 	}
