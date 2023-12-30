@@ -11,6 +11,7 @@ int main(int , char** argv) {
 
 	TEST("Failing test")
 		printf("I'm in a failing test\n");
+		printf("And I print on 2 lines!\n");
 		ASSERT(1 == 0, "Another test should pass after this")
 	END_TEST
 

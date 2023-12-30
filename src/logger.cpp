@@ -30,7 +30,7 @@ struct LogLine {
 	char data[128] = {};
 };
 
-const char* log_line_format = "%ld" DELIM "%s" DELIM "%d" DELIM "%s" DELIM "%s\n";
+const char* log_line_format = "%ld" DELIM "%s" DELIM "%d" DELIM "%s" DELIM "%s" DELIM "\n";
 const char* log_path = "project.log";
 
 // Yes this is a custom parser because I didn't want to read a line in, and then split it, and then read the splits into LogLine
@@ -69,9 +69,9 @@ LogLine deserialize_line(FILE* log_file) {
 	LogLine output;
 	int field_num = 0;
 	std::string field;
-	while (field_num < 6) {
+	while (field_num < 5) {
 		char c = next_char(log_file);
-		if (c > 0 && c != '\n') {
+		if (c > 0) {
 			field.push_back(c);
 		} else {
 			map_field_to_line(&output, field.c_str(), field_num++);
@@ -84,19 +84,10 @@ LogLine deserialize_line(FILE* log_file) {
 // 4kb is chosen because thats the default size of a buffer in linux kernel
 void fcat(const char* top_path, const char* bottom_path, const char* output_path) {
 	const char* temp_path = "temp_cat.log";
-	// Save errno state and restore because this error is useless and muddying up debugging
-	int save_errno = errno;
-	// In case program crash before renaming temp_path, remove it to make copy happy
-	// copy crashes it 'to' exists
 	if (std::filesystem::exists(temp_path)) {
 		std::remove(temp_path);
 	}
-	// Undocumented behavior of filesystem::copy:
-	// 	If temp path does not exist, sets errno to 'No such file or directory'
 	std::filesystem::copy(top_path, temp_path);
-	if (errno == ENOENT) {
-		errno = save_errno;
-	}
 
 	FILE* bottom_file = fopen(bottom_path, "r");
 	FILE* temp_log = fopen(temp_path, "a");
@@ -124,13 +115,22 @@ void logger::log(logger::data_type msg_type, const char* test_file, const char* 
 }
 
 void logger::log_captured_stdout(const char* test_file, const char* test_name, int stdout_cap_fd) {
-	size_t buff_size = 4096;
-	char* buff = (char*) calloc(buff_size, sizeof(char));
-	while (read(stdout_cap_fd, buff, buff_size) > 0) {
+	size_t buff_cap = 4096;
+	char* buff = (char*) malloc(buff_cap * sizeof(char));
+	size_t buff_size = 0;
+	size_t l;
+	while ((l = read(stdout_cap_fd, buff, buff_cap)) > 0) {
+		buff_size += l;
 		char* temp = buff;
-		buff_size *= 2;
-		char* buff = (char*) calloc(buff_size, sizeof(char));
+		buff_cap *= 2;
+		char* buff = (char*) malloc(buff_cap * sizeof(char));
 		strcpy(buff, temp);
+	}
+	// Remove extra newline caused by fflush
+	if (buff_size <= 0) {
+		buff[0] = '\0';
+	} else {
+		buff[buff_size - 1] = '\0';
 	}
 	logger::log(logger::STD_OUT, test_file, test_name, buff);
 	free(buff);
@@ -145,6 +145,13 @@ void logger::display(time_t start_time, time_t end_time) {
 			lines.push_back(l);
 		}
 	} while(lines.back().time >= start_time);
-
+	for (LogLine l : lines) {
+		printf("time %ld\nfile %s\ntype %d\nname %s\ndata %s\n\n", l.time, l.test_file, l.type, l.test_name, l.data);
+	}
 	fclose(log_file);
+//	time_t time;
+//	char test_file[64] = {};
+//	logger::data_type type;
+//	char test_name[64] = {};
+//	char data[128] = {};
 }
