@@ -1,6 +1,7 @@
 #include "../src/raColTest_macros.h"
 
 #include <stdexcept>
+#include <fcntl.h>
 
 int main(int , char** argv) {
 	TEST("Passing test")

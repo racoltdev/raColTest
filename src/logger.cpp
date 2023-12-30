@@ -8,6 +8,8 @@
 #include <string.h>
 #include <string>
 #include <filesystem>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "sys_utils.h"
 
@@ -29,7 +31,7 @@ struct LogLine {
 };
 
 const char* log_line_format = "%ld" DELIM "%s" DELIM "%d" DELIM "%s" DELIM "%s\n";
-const char* log_path = "./project.log";
+const char* log_path = "project.log";
 
 // Yes this is a custom parser because I didn't want to read a line in, and then split it, and then read the splits into LogLine
 // That's two more passes over strings than needed!
@@ -82,7 +84,19 @@ LogLine deserialize_line(FILE* log_file) {
 // 4kb is chosen because thats the default size of a buffer in linux kernel
 void fcat(const char* top_path, const char* bottom_path, const char* output_path) {
 	const char* temp_path = "temp_cat.log";
+	// Save errno state and restore because this error is useless and muddying up debugging
+	int save_errno = errno;
+	// In case program crash before renaming temp_path, remove it to make copy happy
+	// copy crashes it 'to' exists
+	if (std::filesystem::exists(temp_path)) {
+		std::remove(temp_path);
+	}
+	// Undocumented behavior of filesystem::copy:
+	// 	If temp path does not exist, sets errno to 'No such file or directory'
 	std::filesystem::copy(top_path, temp_path);
+	if (errno == ENOENT) {
+		errno = save_errno;
+	}
 
 	FILE* bottom_file = fopen(bottom_path, "r");
 	FILE* temp_log = fopen(temp_path, "a");
@@ -110,10 +124,9 @@ void logger::log(logger::data_type msg_type, const char* test_file, const char* 
 }
 
 void logger::log_captured_stdout(const char* test_file, const char* test_name, int stdout_cap_fd) {
-	size_t buff_size = 128;
+	size_t buff_size = 4096;
 	char* buff = (char*) calloc(buff_size, sizeof(char));
-	FILE* stdout_cap_file = fdopen(stdout_cap_fd, "r");
-	while(fgets(buff, sizeof buff, stdout_cap_file)) {
+	while (read(stdout_cap_fd, buff, buff_size) > 0) {
 		char* temp = buff;
 		buff_size *= 2;
 		char* buff = (char*) calloc(buff_size, sizeof(char));

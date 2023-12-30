@@ -16,40 +16,59 @@
 
 #define TEST(_test_name) \
 { \
+	/* Make sure there's nothing in stdout */ \
 	fflush(stdout); \
 	const char* raColTest_test_name = _test_name; \
-	int raColTest_saved_stdout = dup(STDOUT_FILENO); \
 	int pipefd[2]; \
 	pipe(pipefd); \
-	dup2(pipefd[1], STDOUT_FILENO); \
+	int write_pipe = pipefd[1]; \
+	int read_pipe = pipefd[0]; \
+	/* saved_stdout points to same place as stdout fileno */ \
+	int raColTest_saved_stdout = dup(STDOUT_FILENO); \
+	/* STDOUT_FILENO now refers to the same fp as write_pipe */ \
+	/* This affects STDOUT_FILENO and stdout */ \
+	dup2(write_pipe, STDOUT_FILENO); \
+	/* I can immediately close write_pipe since stdout fileno points to the right place */ \
+	close(write_pipe); \
 	logger::data_type raColTest_status = logger::ERROR; \
 	try { \
 
 #define ASSERT(raColTest_conditional, raColTest_details) \
+		/* Data may have been written but not made it through the buffer yet. Clear it */ \
+		fflush(stdout); \
+		/* read_pipe waits for it's write end to close to get eof. stdout is it's write end, so it must close */ \
+		close(STDOUT_FILENO); \
 		if (!(raColTest_conditional)) { \
 			std::string raColTest_msg = STRING(raColTest_conditional); \
 			raColTest_msg += "\t"; \
 			raColTest_msg += raColTest_details; \
 			raColTest_status = logger::FAIL; \
-			close(pipefd[1]); \
 			logger::log(raColTest_status, argv[0], raColTest_test_name, raColTest_msg.c_str()); \
-			logger::log_captured_stdout(argv[0], raColTest_test_name, pipefd[0]); \
+			/* send logger the read end of the pipe */ \
+			logger::log_captured_stdout(argv[0], raColTest_test_name, read_pipe); \
 		} \
 		else { \
 			raColTest_status = logger::PASS; \
 			logger::log(raColTest_status, argv[0], raColTest_test_name, "\0"); \
 		} \
-		fflush(stdout); \
-		close(pipefd[0]); \
+		/* read end is no longer needed */ \
+		close(read_pipe); \
+		/* redirect stdout back to its original place */ \
 		dup2(raColTest_saved_stdout, STDOUT_FILENO); \
 
 #define END_TEST \
 	} \
 	catch(std::exception& e) { \
-		logger::log(raColTest_status, argv[0], raColTest_test_name, e.what()); \
-		logger::log_captured_stdout(argv[0], raColTest_test_name, pipefd[0]); \
+		/* Data may have been written but not made it through the buffer yet. Clear it */ \
 		fflush(stdout); \
-		close(pipefd[0]); \
+		/* read_pipe waits for it's write end to close to get eof. stdout is it's write end, so it must close */ \
+		close(STDOUT_FILENO); \
+		logger::log(raColTest_status, argv[0], raColTest_test_name, e.what()); \
+		/* send logger the read end of the pipe */ \
+		logger::log_captured_stdout(argv[0], raColTest_test_name, read_pipe); \
+		/* read end is no longer needed */ \
+		close(read_pipe); \
+		/* redirect stdout back to its original place */ \
 		dup2(raColTest_saved_stdout, STDOUT_FILENO); \
 	} \
 }
