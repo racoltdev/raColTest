@@ -62,7 +62,7 @@ void map_field_to_line(LogLine* line, const char* field, short num) {
 }
 
 // I'm not gonna do error checking here. Don't edit the log file!
-// TODO stdout_cap_files will have newlines, but I don't want to move to the next line yet. Figure that out
+// TODO stdout_cap_file will have newlines, but I don't want to move to the next line yet. Figure that out
 LogLine deserialize_line(FILE* log_file) {
 	LogLine output;
 	int field_num = 0;
@@ -109,12 +109,16 @@ void logger::log(logger::data_type msg_type, const char* test_file, const char* 
 	rCT_sys::io_handler(std::remove(line_path), line_path, "Failed to remove ");
 }
 
-void logger::log_captured_stdout(const char* test_file, const char* test_name, FILE* stdout_cap_file) {
-	fseek(stdout_cap_file, 0, SEEK_END);
-	long int buff_size = ftell(stdout_cap_file);
-	char* buff = (char*) malloc(sizeof(char) * buff_size);
-	fseek(stdout_cap_file, 0, SEEK_SET);
-	fread(buff, sizeof(char), buff_size, stdout_cap_file);
+void logger::log_captured_stdout(const char* test_file, const char* test_name, int stdout_cap_fd) {
+	size_t buff_size = 128;
+	char* buff = (char*) calloc(buff_size, sizeof(char));
+	FILE* stdout_cap_file = fdopen(stdout_cap_fd, "r");
+	while(fgets(buff, sizeof buff, stdout_cap_file)) {
+		char* temp = buff;
+		buff_size *= 2;
+		char* buff = (char*) calloc(buff_size, sizeof(char));
+		strcpy(buff, temp);
+	}
 	logger::log(logger::STD_OUT, test_file, test_name, buff);
 	free(buff);
 }

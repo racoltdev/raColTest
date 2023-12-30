@@ -13,7 +13,7 @@ namespace logger {
 	enum data_type {ERROR, FAIL, PASS, STD_OUT};
 
 	void log(data_type msg_type, const char* test_file, const char* test_name, const char* data);
-	void log_captured_stdout(const char* test_file, const char* test_name, FILE* std_cap_file);
+	void log_captured_stdout(const char* test_file, const char* test_name, int std_cap_fd);
 	void display(time_t start_time, time_t end_time);
 };
 
