@@ -3,7 +3,8 @@
 
 #include <stdio.h>
 #include <sys/wait.h>
-#include <string>
+#include <exception>
+#include <cstdlib>
 // TODO if i ever get multithreading running, this needs semaphores to interact with logger
 //#include <semaphore>
 
@@ -14,10 +15,10 @@
 #define TEST(_test_name) \
 { \
 	/* Make sure there's nothing in stdout */ \
-	if (fflush(stdout) == EOF) { \
-		perror("Fatal error (fflush(stdout)). raColTest is exiting this test!"); \
-		exit(-1); \
-	} \
+	rCT_sys::fflush_handler( \
+		fflush(stdout), \
+		"stdout" \
+	); \
 	const char* raColTest_test_name = _test_name; \
 	int raColTest_pipefd[2]; \
 	rCT_sys::test_handler( \
@@ -55,10 +56,10 @@
 			"dup2(saved_stdout, STDOUT_FILENO)" \
 		); \
 		if (!(raColTest_conditional)) { \
-			std::string raColTest_msg = "assert(" #raColTest_conditional "): ";\
-			raColTest_msg += raColTest_details; \
+			const char* raColTest_msg1 = "assert(" #raColTest_conditional "): ";\
+			const char* raColTest_msg = rCT_sys::good_strcat(raColTest_msg1, raColTest_details); \
 			raColTest_status = logger::FAIL; \
-			logger::log(raColTest_status, argv[0], raColTest_test_name, raColTest_msg.c_str()); \
+			logger::log(raColTest_status, argv[0], raColTest_test_name, raColTest_msg); \
 			/* send logger the read end of the pipe */ \
 			logger::log_captured_stdout(argv[0], raColTest_test_name, raColTest_pipefd[0]); \
 		} \
@@ -71,10 +72,10 @@
 	} \
 	catch(std::exception& e) { \
 		/* Data may have been written but not made it through the buffer yet. Clear it */ \
-		if (fflush(stdout) == EOF) { \
-			perror("Fatal error (fflush(stdout)). raColTest is exiting this test!"); \
-			exit(-1); \
-		} \
+		rCT_sys::fflush_handler( \
+			fflush(stdout), \
+			"stdout" \
+		); \
 		/* raColTest_pipefd[0] waits for it's write end to close to get EOF. stdout points to the same place as it's write end, so redirecting it acts like an EOF */ \
 		rCT_sys::test_handler( \
 			dup2(raColTest_saved_stdout, STDOUT_FILENO), \

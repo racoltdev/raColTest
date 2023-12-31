@@ -55,6 +55,18 @@ namespace rCT_sys {
 		return status;
 	}
 
+	int fflush_handler(int status, const char* file_name) {
+		if (status == EOF) {
+			const char* msg1 = "Fatal error (fflush(";
+			const char* msg2 = good_strcat(msg1, file_name);
+			const char* msg3 = "stdout)). raColTest is exiting this test!";
+			const char* msg = good_strcat(msg2, msg3);
+			perror(msg);
+			exit(-1);
+		}
+		return status;
+	}
+
 	int io_handler(int status, const char* file_name, const char* msg) {
 		char* description = good_strcat(msg, file_name);
 		return error_handler(status, description);
