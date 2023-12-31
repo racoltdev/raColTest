@@ -83,13 +83,13 @@ void exec_file(char* path) {
 		if (WIFSIGNALED(status)) {
 			char msg[64];
 			sprintf(msg, "Test was killed by signal: %d (%s)", WTERMSIG(status), strsignal(WTERMSIG (status)));
-			raColTest_logger::log(raColTest_logger::ERROR, fname, fname, msg);
+			logger::log(logger::ERROR, fname, fname, msg);
 			strcpy(error_blip, YELB "E" RESET ".....");
 		}
 		else if (WIFSTOPPED(status)) {
 			char msg[64];
 			sprintf(msg, "Test was stopped by signal: %d (%s)", WSTOPSIG(status), strsignal(WSTOPSIG (status)));
-			raColTest_logger::log(raColTest_logger::ERROR, fname, fname, msg);
+			logger::log(logger::ERROR, fname, fname, msg);
 			strcpy(error_blip, YELB "E" RESET ".....");
 		}
 		printf("\t\t");
@@ -121,5 +121,5 @@ void test_runner() {
 	}
 	time_t end = time(NULL);
 	printf("\nFinished executing tests\n\n");
-	raColTest_logger::display(start, end);
+	logger::display(start, end);
 }

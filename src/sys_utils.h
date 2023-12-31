@@ -5,6 +5,9 @@ namespace rCT_sys {
 	// status: standard return from syscalls
 	// msg: full msg to display in case of fail status
 	int error_handler(int status, const char* msg);
+	int test_handler(int status, const char* func_name);
+	FILE* fopen_handler(FILE* status, const char* file_name);
+	int fclose_handler(int status, const char* file_name);
 	int fork_handler();
 	int pipe_handler(int* pipefd);
 	int close_handler(int fd, const char* file_name);

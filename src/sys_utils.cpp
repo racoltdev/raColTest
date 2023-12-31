@@ -23,9 +23,34 @@ namespace rCT_sys {
 	}
 
 	int error_handler(int status, const char* msg) {
-		if (status == -1) {
+		if (status < 0) {
 			perror(msg);
 			exit(-1);
+		}
+		return status;
+	}
+
+	int test_handler(int status, const char* func_name) {
+		const char* msg1 = "Fatal error (";
+		const char* msg2 = good_strcat(msg1, func_name);
+		const char* msg3 = "). raColTest is exiting this test!";
+		const char* msg = good_strcat(msg2, msg3);
+		return error_handler(status, msg);
+	}
+
+	FILE* fopen_handler(FILE* status, const char* file_name) {
+		if (status == NULL) {
+			const char* msg = good_strcat("Failed to open ", file_name);
+			perror(msg);
+			exit(-1);
+		}
+		return status;
+	}
+
+	int fclose_handler(int status, const char* file_name) {
+		if (status == EOF) {
+			const char* msg = good_strcat("[Non fatal] failed to close ", file_name);
+			perror(msg);
 		}
 		return status;
 	}
