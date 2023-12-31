@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdio.h>
 
-namespace logger {
+namespace raColTest_logger {
 	// ERROR is meant to catch stderr messages and any error handling code
 	// FAIL encodes a failed test
 	// PASS encodes a passing test

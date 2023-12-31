@@ -14,6 +14,10 @@
 #include "sys_utils.h"
 #include "ANSI-color-codes.h"
 
+#define VERB(type) (type == raColTest_logger::ERROR ? "encountered an exception:" : \
+		type == raColTest_logger::FAIL ? "failed:" : \
+		"UNKOWN VERB")
+
 #define DELIM ":-:"
 // 4kb is chosen because thats the default size of a buffer in linux kernel
 #define BUFF_SIZE 4096
@@ -22,7 +26,7 @@
 struct LogLine {
 	time_t time;
 	char test_file[64] = {};
-	logger::data_type type;
+	raColTest_logger::data_type type;
 	char test_name[64] = {};
 	char data[128] = {};
 };
@@ -55,7 +59,7 @@ char next_char(FILE* log_file) {
 void map_field_to_line(LogLine* line, const char* field, short num) {
 	if     (num == 0) {line->time = strtol(field, NULL, 0);}
 	else if(num == 1) {strcpy(line->test_file, field);}
-	else if(num == 2) {line->type = static_cast<logger::data_type>(atoi(field));}
+	else if(num == 2) {line->type = static_cast<raColTest_logger::data_type>(atoi(field));}
 	else if(num == 3) {strcpy(line->test_name, field);}
 	else              {strcpy(line->data, field);}
 }
@@ -99,7 +103,7 @@ void fcat(const char* top_path, const char* bottom_path, const char* output_path
 
 // TODO Might want to sanitize input later
 // TODO may need this to work with ms precision if tests are run back to back
-void logger::log(logger::data_type msg_type, const char* test_file, const char* test_name, const char* data) {
+void raColTest_logger::log(raColTest_logger::data_type msg_type, const char* test_file, const char* test_name, const char* data) {
 	const char* line_path = "line.log";
 	FILE* line_log = fopen(line_path, "w");
 	time_t sec = time(NULL);
@@ -110,7 +114,7 @@ void logger::log(logger::data_type msg_type, const char* test_file, const char* 
 	rCT_sys::io_handler(std::remove(line_path), line_path, "Failed to remove ");
 }
 
-void logger::log_captured_stdout(const char* test_file, const char* test_name, int stdout_cap_fd) {
+void raColTest_logger::log_captured_stdout(const char* test_file, const char* test_name, int stdout_cap_fd) {
 	size_t buff_cap = BUFF_SIZE;
 	char* buff = (char*) malloc(buff_cap * sizeof(char));
 	size_t buff_size = 0;
@@ -128,7 +132,7 @@ void logger::log_captured_stdout(const char* test_file, const char* test_name, i
 	} else {
 		buff[buff_size - 1] = '\0';
 	}
-	logger::log(logger::STD_OUT, test_file, test_name, buff);
+	raColTest_logger::log(raColTest_logger::STD_OUT, test_file, test_name, buff);
 	free(buff);
 }
 
@@ -146,12 +150,7 @@ std::vector<LogLine> lines_in_range(time_t start_time, time_t end_time) {
 	return lines;
 }
 
-#define VERB(type) (type == logger::ERROR ? "encountered an exception:" : \
-		type == logger::FAIL ? "failed:" : \
-		"UNKOWN VERB")
-
-
-void logger::display(time_t start_time, time_t end_time) {
+void raColTest_logger::display(time_t start_time, time_t end_time) {
 	std::vector<LogLine> lines = lines_in_range(start_time, end_time);
 	bool show_stdout = false;
 	bool pass = true;
@@ -159,13 +158,13 @@ void logger::display(time_t start_time, time_t end_time) {
 		LogLine l = lines[i - 1];
 		if (show_stdout) {
 			show_stdout = false;
-			if (l.type != logger::STD_OUT) {
-				printf(YELB "No captured standard out!------" RESET "\n\n");
+			if (l.type != raColTest_logger::STD_OUT) {
+				printf(YELB "No captured standard out-------" RESET "\n\n");
 			} else {
 				printf("%s\n" YELB "End of captured stdout---------" RESET "\n\n", l.data);
 			}
 		}
-		else if (l.type < logger::PASS) {
+		else if (l.type < raColTest_logger::PASS) {
 			pass = false;
 			printf("Test \"%s\" %s %s\n", l.test_name, VERB(l.type), l.data);
 			printf(REDB "Captured stdout----------------" RESET "\n");
@@ -174,7 +173,7 @@ void logger::display(time_t start_time, time_t end_time) {
 	}
 	// In case there was no stdout and that was the last line in range
 	if (show_stdout) {
-		printf(YELB "No captured standard out!------" RESET "\n\n");
+		printf(YELB "No captured standard out-------" RESET "\n\n");
 	}
 
 	if (pass) {

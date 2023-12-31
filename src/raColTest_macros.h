@@ -1,19 +1,14 @@
 #ifndef raColTest_macros_h
 #define raColTest_macros_h
 
-#include <unistd.h>
 #include <stdio.h>
 #include <sys/wait.h>
 #include <string>
-#include <fcntl.h>
-// TODO if i ever get multithreading running, this needs semaphores to interact with logger
+// TODO if i ever get multithreading running, this needs semaphores to interact with raColTest_logger
 //#include <semaphore>
 
 #include "sys_utils.h"
 #include "logger.h"
-#include "ANSI-color-codes.h"
-
-#define STRING(string) #string
 
 #define TEST(_test_name) \
 { \
@@ -31,7 +26,7 @@
 	dup2(write_pipe, STDOUT_FILENO); \
 	/* I can immediately close write_pipe since stdout fileno points to the right place */ \
 	close(write_pipe); \
-	logger::data_type raColTest_status = logger::ERROR; \
+	raColTest_logger::data_type raColTest_status = raColTest_logger::ERROR; \
 	try { \
 
 #define ASSERT(raColTest_conditional, raColTest_details) \
@@ -40,16 +35,16 @@
 		/* read_pipe waits for it's write end to close to get EOF. stdout points to the same place as it's write end, so redirecting it acts like an EOF */ \
 		dup2(raColTest_saved_stdout, STDOUT_FILENO); \
 		if (!(raColTest_conditional)) { \
-			std::string raColTest_msg = "assert(" STRING(raColTest_conditional) "): ";\
+			std::string raColTest_msg = "assert(" #raColTest_conditional "): ";\
 			raColTest_msg += raColTest_details; \
-			raColTest_status = logger::FAIL; \
-			logger::log(raColTest_status, argv[0], raColTest_test_name, raColTest_msg.c_str()); \
+			raColTest_status = raColTest_logger::FAIL; \
+			raColTest_logger::log(raColTest_status, argv[0], raColTest_test_name, raColTest_msg.c_str()); \
 			/* send logger the read end of the pipe */ \
-			logger::log_captured_stdout(argv[0], raColTest_test_name, read_pipe); \
+			raColTest_logger::log_captured_stdout(argv[0], raColTest_test_name, read_pipe); \
 		} \
 		else { \
-			raColTest_status = logger::PASS; \
-			logger::log(raColTest_status, argv[0], raColTest_test_name, "\0"); \
+			raColTest_status = raColTest_logger::PASS; \
+			raColTest_logger::log(raColTest_status, argv[0], raColTest_test_name, "\0"); \
 		}
 
 #define END_TEST \
@@ -59,19 +54,20 @@
 		fflush(stdout); \
 		/* read_pipe waits for it's write end to close to get EOF. stdout points to the same place as it's write end, so redirecting it acts like an EOF */ \
 		dup2(raColTest_saved_stdout, STDOUT_FILENO); \
-		logger::log(raColTest_status, argv[0], raColTest_test_name, e.what()); \
+		raColTest_logger::log(raColTest_status, argv[0], raColTest_test_name, e.what()); \
 		/* send logger the read end of the pipe */ \
-		logger::log_captured_stdout(argv[0], raColTest_test_name, read_pipe); \
+		raColTest_logger::log_captured_stdout(argv[0], raColTest_test_name, read_pipe); \
 	} \
 	/* read end is no longer needed */ \
 	close(read_pipe); \
-	if (raColTest_status == logger::PASS) { \
-		printf(GRNB "p" RESET); \
-	} else if (raColTest_status == logger::FAIL) { \
-		printf(REDB "F" RESET); \
+	/* Just use string literals for term colors to avoid cluttering end user namespace */ \
+	if (raColTest_status == raColTest_logger::PASS) { \
+		printf("\e[42m" "p" "\e[0m"); \
+	} else if (raColTest_status == raColTest_logger::FAIL) { \
+		printf("\e[41m" "F" "\e[0m"); \
 	} \
-	else if (raColTest_status == logger::ERROR) { \
-		printf(REDB "e" RESET); \
+	else if (raColTest_status == raColTest_logger::ERROR) { \
+		printf("\e[41m" "e" "\e[0m"); \
 	} \
 }
 
