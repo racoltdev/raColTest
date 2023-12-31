@@ -52,6 +52,7 @@ char* isolate_fname(char* path, int parents) {
 void exec_file(char* path) {
 	// Normally I should free this, but this execution env gets wiped in the next line anyways
 	char* fname = isolate_fname(path, 2);
+	fflush(stdout);
 	printf("\tExecuting %s.........", fname);
 	pid_t pid;
 	int pipefd[2];
@@ -78,7 +79,7 @@ void exec_file(char* path) {
 		);
 		rCT_sys::close_handler(pipefd[1], "pipefd");
 		if (WIFSIGNALED(status)) {
-			printf("Test was stopped by signal: %d\n", WTERMSIG(status));
+			printf("\t\tTest was stopped by signal: %d\n", WTERMSIG(status));
 		} else {
 			rCT_sys::print_pipe(pipefd);
 			printf("\n");
@@ -107,5 +108,6 @@ void test_runner() {
 		exec_test(test);
 	}
 	time_t end = time(NULL);
+	printf("\nFinished executing tests\n\n");
 	logger::display(start, end);
 }

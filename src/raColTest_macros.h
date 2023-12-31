@@ -12,6 +12,11 @@
 #include "sys_utils.h"
 #include "logger.h"
 
+// TODO check if using windows and swap with windows text coloring conio.h
+#define REDB "\e[0;101m"
+#define GRNB "\e[42m"
+#define RESET "\x1B[0m"
+
 #define STRING(string) #string
 
 #define TEST(_test_name) \
@@ -39,8 +44,7 @@
 		/* read_pipe waits for it's write end to close to get EOF. stdout points to the same place as it's write end, so redirecting it acts like an EOF */ \
 		dup2(raColTest_saved_stdout, STDOUT_FILENO); \
 		if (!(raColTest_conditional)) { \
-			std::string raColTest_msg = STRING(raColTest_conditional); \
-			raColTest_msg += "\t"; \
+			std::string raColTest_msg = "assert(" STRING(raColTest_conditional) "): ";\
 			raColTest_msg += raColTest_details; \
 			raColTest_status = logger::FAIL; \
 			logger::log(raColTest_status, argv[0], raColTest_test_name, raColTest_msg.c_str()); \
@@ -50,9 +54,7 @@
 		else { \
 			raColTest_status = logger::PASS; \
 			logger::log(raColTest_status, argv[0], raColTest_test_name, "\0"); \
-		} \
-		/* read end is no longer needed */ \
-		close(read_pipe); \
+		} 
 
 #define END_TEST \
 	} \
@@ -64,8 +66,16 @@
 		logger::log(raColTest_status, argv[0], raColTest_test_name, e.what()); \
 		/* send logger the read end of the pipe */ \
 		logger::log_captured_stdout(argv[0], raColTest_test_name, read_pipe); \
-		/* read end is no longer needed */ \
-		close(read_pipe); \
+	} \
+	/* read end is no longer needed */ \
+	close(read_pipe); \
+	if (raColTest_status == logger::PASS) { \
+		printf(GRNB "p" RESET); \
+	} else if (raColTest_status == logger::FAIL) { \
+		printf(REDB "F" RESET); \
+	} \
+	else if (raColTest_status == logger::ERROR) { \
+		printf(REDB "e" RESET); \
 	} \
 }
 

@@ -14,11 +14,13 @@
 #include "sys_utils.h"
 
 #define DELIM ":-:"
-#define BUFF_SIZE 4000
+// 4kb is chosen because thats the default size of a buffer in linux kernel
+#define BUFF_SIZE 4096
 
 // TODO check if using windows and swap with windows text coloring conio.h
 #define REDB "\e[0;101m"
 #define GRNB "\e[42m"
+#define YELB "\e[43m"
 #define RESET "\x1B[0m"
 
 // TODO made data variable size
@@ -81,7 +83,6 @@ LogLine deserialize_line(FILE* log_file) {
 	return output;
 }
 
-// 4kb is chosen because thats the default size of a buffer in linux kernel
 void fcat(const char* top_path, const char* bottom_path, const char* output_path) {
 	const char* temp_path = "temp_cat.log";
 	if (std::filesystem::exists(temp_path)) {
@@ -115,7 +116,7 @@ void logger::log(logger::data_type msg_type, const char* test_file, const char* 
 }
 
 void logger::log_captured_stdout(const char* test_file, const char* test_name, int stdout_cap_fd) {
-	size_t buff_cap = 4096;
+	size_t buff_cap = BUFF_SIZE;
 	char* buff = (char*) malloc(buff_cap * sizeof(char));
 	size_t buff_size = 0;
 	size_t l;
@@ -136,7 +137,7 @@ void logger::log_captured_stdout(const char* test_file, const char* test_name, i
 	free(buff);
 }
 
-void logger::display(time_t start_time, time_t end_time) {
+std::vector<LogLine> lines_in_range(time_t start_time, time_t end_time) {
 	std::vector<LogLine> lines;
 	FILE* log_file = fopen(log_path, "r");
 	do {
@@ -145,13 +146,40 @@ void logger::display(time_t start_time, time_t end_time) {
 			lines.push_back(l);
 		}
 	} while(lines.back().time >= start_time);
-	for (LogLine l : lines) {
-		printf("time %ld\nfile %s\ntype %d\nname %s\ndata %s\n\n", l.time, l.test_file, l.type, l.test_name, l.data);
-	}
 	fclose(log_file);
-//	time_t time;
-//	char test_file[64] = {};
-//	logger::data_type type;
-//	char test_name[64] = {};
-//	char data[128] = {};
+	lines.pop_back();
+	return lines;
+}
+
+#define VERB(type) (type == logger::ERROR ? "encountered an exception:" : \
+		type == logger::FAIL ? "failed:" : \
+		"UNKOWN VERB")
+
+
+void logger::display(time_t start_time, time_t end_time) {
+	std::vector<LogLine> lines = lines_in_range(start_time, end_time);
+	bool show_stdout = false;
+	bool pass = true;
+	for (size_t i = lines.size(); i > 0; --i) {
+		LogLine l = lines[i - 1];
+		if (show_stdout) {
+			show_stdout = false;
+			if (l.type != logger::STD_OUT) {
+				printf(YELB "No captured standard out!------" RESET "\n\n");
+			} else {
+				printf("%s\n" YELB "End of captured stdout---------" RESET "\n\n", l.data);
+			}
+		}
+		else if (l.type < logger::PASS) {
+			pass = false;
+			printf("Test \"%s\" %s %s\n", l.test_name, VERB(l.type), l.data);
+			printf(REDB "Captured stdout----------------" RESET "\n");
+			show_stdout = true;
+		}
+	}
+	if (pass) {
+		printf(GRNB "All tests passed successfully.\nBuild successful!" RESET "\n");
+	} else {
+		printf(REDB "Some tests failed!" RESET "\n");
+	}
 }
