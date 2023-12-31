@@ -8,6 +8,7 @@
 
 #include "sys_utils.h"
 #include "logger.h"
+#include "ANSI-color-codes.h"
 
 std::vector<std::string> collect_tests() {
 	std::vector<std::string> test_names;
@@ -71,19 +72,30 @@ void exec_file(char* path) {
 			"FAIL\n\t\tFailed to execute test file" \
 		);
 	} else {
-		printf("\n\t\t");
+		printf("\n");
 		int status;
+		char error_blip[16] = "";
 		rCT_sys::error_handler( \
 			waitpid(pid, &status, 0), \
-			"Error while waiting for test to finish" \
+			"\t\tFatal error while waiting for test to finish, Quiting raColTest" \
 		);
 		rCT_sys::close_handler(pipefd[1], "pipefd");
 		if (WIFSIGNALED(status)) {
-			printf("\t\tTest was stopped by signal: %d\n", WTERMSIG(status));
-		} else {
-			rCT_sys::print_pipe(pipefd);
-			printf("\n");
+			char msg[64];
+			sprintf(msg, "Test was killed by signal: %d (%s)", WTERMSIG(status), strsignal(WTERMSIG (status)));
+			logger::log(logger::ERROR, fname, fname, msg);
+			strcpy(error_blip, YELB "E" RESET ".....");
 		}
+		else if (WIFSTOPPED(status)) {
+			char msg[64];
+			sprintf(msg, "Test was stopped by signal: %d (%s)", WSTOPSIG(status), strsignal(WSTOPSIG (status)));
+			logger::log(logger::ERROR, fname, fname, msg);
+			strcpy(error_blip, YELB "E" RESET ".....");
+		}
+		printf("\t\t");
+		rCT_sys::print_pipe(pipefd);
+		printf("%s", error_blip);
+		printf("\n");
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 	}
 }

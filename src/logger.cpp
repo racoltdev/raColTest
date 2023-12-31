@@ -12,16 +12,11 @@
 #include <fcntl.h>
 
 #include "sys_utils.h"
+#include "ANSI-color-codes.h"
 
 #define DELIM ":-:"
 // 4kb is chosen because thats the default size of a buffer in linux kernel
 #define BUFF_SIZE 4096
-
-// TODO check if using windows and swap with windows text coloring conio.h
-#define REDB "\e[0;101m"
-#define GRNB "\e[42m"
-#define YELB "\e[43m"
-#define RESET "\x1B[0m"
 
 // TODO made data variable size
 struct LogLine {
@@ -177,6 +172,11 @@ void logger::display(time_t start_time, time_t end_time) {
 			show_stdout = true;
 		}
 	}
+	// In case there was no stdout and that was the last line in range
+	if (show_stdout) {
+		printf(YELB "No captured standard out!------" RESET "\n\n");
+	}
+
 	if (pass) {
 		printf(GRNB "All tests passed successfully.\nBuild successful!" RESET "\n");
 	} else {

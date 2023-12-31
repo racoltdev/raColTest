@@ -11,11 +11,7 @@
 
 #include "sys_utils.h"
 #include "logger.h"
-
-// TODO check if using windows and swap with windows text coloring conio.h
-#define REDB "\e[0;101m"
-#define GRNB "\e[42m"
-#define RESET "\x1B[0m"
+#include "ANSI-color-codes.h"
 
 #define STRING(string) #string
 
@@ -54,7 +50,7 @@
 		else { \
 			raColTest_status = logger::PASS; \
 			logger::log(raColTest_status, argv[0], raColTest_test_name, "\0"); \
-		} 
+		}
 
 #define END_TEST \
 	} \
