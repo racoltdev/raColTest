@@ -1,4 +1,4 @@
-#include "raColTest/macros.h"
+#include "lib_raColTest/macros.h"
 
 int main(int, char** argv) {
 	TEST("Executes tests correctly")
