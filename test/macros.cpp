@@ -1,4 +1,4 @@
-#include "../src/raColTest_macros.h"
+#include "raColTest/macros.h"
 
 #include <stdexcept>
 #include <fcntl.h>

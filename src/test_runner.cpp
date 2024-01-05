@@ -6,9 +6,9 @@
 #include <sys/wait.h>
 #include <time.h>
 
-#include "sys_utils.h"
-#include "logger.h"
-#include "ANSI-color-codes.h"
+#include "raColTest/sys_utils.h"
+#include "raColTest/logger.h"
+#include "raColTest/ANSI-color-codes.h"
 
 std::vector<std::string> collect_tests() {
 	std::vector<std::string> test_names;

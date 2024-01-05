@@ -30,6 +30,12 @@ $(TARGET): $(OBJECTS) $(BUILD_DIR)src/main.o
 
 all: $(TARGET) $(TESTS)
 
+install:
+	mv $(TARGET) /usr/bin/$(TARGET)
+
+uninstall:
+	rm /usr/bin/$(TARGET)
+
 clean:
 	rm -rf $(TARGET)
 	rm -rf $(BUILD_DIR)

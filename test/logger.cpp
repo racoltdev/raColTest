@@ -1,6 +1,6 @@
-#include "raColTest_macros.h"
+#include "raColTest/macros.h"
 
-#include "logger.h"
+#include "raColTest/logger.h"
 
 int main(int, char** argv) {
 	TEST("Logger imported correctly")
