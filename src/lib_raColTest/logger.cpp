@@ -102,10 +102,12 @@ void fcat(const char* top_path, const char* bottom_path, const char* output_path
 	);
 
 	char* buff[BUFF_SIZE];
-	while (fread(buff, sizeof(char), BUFF_SIZE, bottom_file) == BUFF_SIZE) {
-		fwrite(buff, sizeof(char), BUFF_SIZE, temp_log);
+	size_t read_size;
+	do {
+		read_size = fread(buff, sizeof(char), BUFF_SIZE, bottom_file);
+		fwrite(buff, sizeof(char), read_size, temp_log);
 		rCT_sys::error_handler(errno, "Failed to write to temp_cat.log");
-	}
+	} while (read_size == BUFF_SIZE);
 	rCT_sys::error_handler(errno, "Failed to read from project.log");
 	rCT_sys::fclose_handler( \
 		fclose(bottom_file), \
@@ -133,11 +135,15 @@ void logger::log(logger::data_type msg_type, const char* test_file, const char* 
 		fclose(line_log), \
 		line_path \
 	);
-	fcat(line_path, log_path, log_path);
-	rCT_sys::io_handler( \
-		std::remove(line_path), \
-		line_path, "Failed to remove " \
-	);
+	if (std::filesystem::exists(log_path)) {
+		fcat(line_path, log_path, log_path);
+		rCT_sys::io_handler( \
+			std::remove(line_path), \
+			line_path, "Failed to remove " \
+		);
+	} else {
+		std::filesystem::rename(line_path, log_path);
+	}
 }
 
 void logger::log_captured_stdout(const char* test_file, const char* test_name, int stdout_cap_fd) {
