@@ -20,3 +20,6 @@ It is also important to note that all code between TEST() and END_TEST is within
 The files under test/ can be used as examples of test files. <br \>
 <br />
 The files under src/lib_raColTest should be inculded in any project you would like to test, as raColTest requires them to build test executables. src/lib_raColTest/macros.h is the only stable interface with raColTest, but advanced users may interact with the contents of src/lib_raColTest/logger.h and src/lib_raColTest/logger.cpp if desired.
+
+<h2>Examples</h2>
+The included test/ directory can be used as an example of how to write tests with raColTest. For a more comprehensive example, see https://github.com/racoltdev/raColTest-Example-Project, which is a bare bones C++ project that includes tests written for raColTest and the required project setup to get raColTest to function correctly.
