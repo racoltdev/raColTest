@@ -67,10 +67,11 @@ void exec_file(char* path) {
 		);
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 		rCT_sys::close_handler(pipefd[1], "pipefd");
-		rCT_sys::error_handler( \
-			execl(path, fname, NULL), \
-			"FAIL\n\t\tFailed to execute test file" \
-		);
+		int status = execl(path, fname, NULL);
+		if (status < 0) {
+			perror("FAIL\n\t\tFailed to execute test file" );
+			logger::log(logger::ERROR, fname, fname, "Failed to execute test file");
+		}
 	} else {
 		printf("\n");
 		int status;
@@ -101,13 +102,15 @@ void exec_file(char* path) {
 }
 
 void exec_test(std::string& path) {
-	const std::string test = "test";
+	printf("%s\n", path.c_str());
+	const std::string test = "/test/";
 	std::string::size_type index = path.find(test);
-	path.replace(index, test.length(), "testbin");
+	path.replace(index, test.length(), "/testbin/");
 	int length = path.length();
 	char* test_path = path.data();
 	// Remove '.cpp'
 	test_path[length - 4] = '\0';
+	printf("%s\n", test_path);
 	exec_file(test_path);
 }
 
