@@ -8,7 +8,7 @@ Prerequisites: </br>
 - make
 - gcc
 <!-- end list -->
-Run <code>make all</code> to build from source. Ensure tests are running as expected by running <code>./raColTest</code>. Expected output: <img src="raColTest.png"/> </br>
+Run <code>make all</code> to build from source. Ensure tests are running as expected by running <code>./raColTest</code>. Expected output: </br> </br> <img src="raColTest.png"/> </br> </br>
 If all tests perform as expected, run <code>make install</code> to place the raColTest executable in your path. </br>
 </br>
 ## Usage
