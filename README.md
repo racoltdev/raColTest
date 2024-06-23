@@ -19,10 +19,9 @@ To use your own build system, any test code should be put in a directory at proj
 </br>
 
 ### Writing tests
-Each test file should be placed in a directory called "test" at project root. They should each have a main function with the signature </br> <code>int main(int argc, char** argv)</code>. argv is used internally to track the name of the test file. </br>
-All test files must include lib_raColTest/macros.h and every test must call TEST(), ASSERT(), and END_TEST in that order. Each test must be headed with <code>TEST(test_name)</code>, which declares needed variables and opens an exception safe testing environment. Next, write any needed test code. Following this, <code>ASSERT(conditional, description)</code>, which determines if the test has passed or failed based off of the conditional it is given, and logs test data. Any destructor code you may need should follow. Finally, a test is finalized with <code>END_TEST</code>. </br>
-It is also important to note that all code between TEST() and END_TEST is within a local scope. Any values you would like to access outside of a test must be declared prior to opening the TEST() block. </br> 
-The files under test/ can be used as examples of test files. <br \>
+Each test file should be placed in a directory called "test" at project root. They should each have a main function with the signature </br> `int main(int argc, char** argv)`. argv is used internally to track the name of the test file. </br> </br>
+All test files must include lib_raColTest/macros.h and every test must call TEST(), ASSERT(), and END_TEST in that order. Each test must be headed with `TEST(test_name)`, which declares needed variables and opens an exception safe testing environment. Next, write any needed test code. Following this, `ASSERT(conditional, description)`, which determines if the test has passed or failed based off of the conditional it is given, and logs test data. Any destructor code you may need should follow. Finally, a test is finalized with `END_TEST`. It is also important to note that all code between TEST() and END_TEST is within a local scope. Any values you would like to access outside of a test must be declared prior to opening the TEST() block. </br> </br>
+The files under test/ can be used as examples of test files. </br>
 </br>
 The files under src/lib_raColTest should be inculded in any project you would like to test, as raColTest requires them to build test executables. src/lib_raColTest/macros.h is the only stable interface with raColTest, but advanced users may interact with the contents of src/lib_raColTest/logger.h and src/lib_raColTest/logger.cpp if desired.
 
