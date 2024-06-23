@@ -19,7 +19,7 @@ std::vector<std::string> collect_tests() {
 			printf("\tCollected %s\n", p.c_str());
 		}
 		if (test_names.empty()) {
-			printf("\tNo tests were collected!");
+			printf("\tNo tests were collected!\n");
 		}
 		return test_names;
 	}
