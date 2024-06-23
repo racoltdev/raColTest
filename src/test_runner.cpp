@@ -102,7 +102,6 @@ void exec_file(char* path) {
 }
 
 void exec_test(std::string& path) {
-	printf("%s\n", path.c_str());
 	const std::string test = "/test/";
 	std::string::size_type index = path.find(test);
 	path.replace(index, test.length(), "/testbin/");
@@ -110,7 +109,6 @@ void exec_test(std::string& path) {
 	char* test_path = path.data();
 	// Remove '.cpp'
 	test_path[length - 4] = '\0';
-	printf("%s\n", test_path);
 	exec_file(test_path);
 }
 
