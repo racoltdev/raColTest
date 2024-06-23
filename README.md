@@ -11,6 +11,7 @@ Prerequisites: </br>
 Run <code>make all</code> to build from source. Ensure tests are running as expected by running <code>./raColTest</code>. Expected output: </br> </br> <img src="raColTest.png"/> </br> </br>
 If all tests perform as expected, run <code>make install</code> to place the raColTest executable in your path. </br>
 </br>
+
 ## Usage
 ### Build
 The included build system is capable of functioning with many other C or C++ projects. </br>
@@ -24,6 +25,22 @@ It is also important to note that all code between TEST() and END_TEST is within
 The files under test/ can be used as examples of test files. <br \>
 </br>
 The files under src/lib_raColTest should be inculded in any project you would like to test, as raColTest requires them to build test executables. src/lib_raColTest/macros.h is the only stable interface with raColTest, but advanced users may interact with the contents of src/lib_raColTest/logger.h and src/lib_raColTest/logger.cpp if desired.
+
+## Output
+raColTest prints output in 4 parts: Collection, Excuction, Details, and Status.
+### 1. Collection
+Headed by "Collecting tests.......", this section lists the full canonical path of all the test source files raColTest was able to find in a project.
+### 2. Execution
+Headed by "Executing tests........", this section lists the local path of each test executable as it is run, and status "blips" are filled in as each individual test in a file is executed. Blips are a quick indicator of how a test suite is running before it is finished. The kinds of blips are:
+- Pass: "p" with a green background
+- Fail: "F" with a red background
+- Exception: "e" with a red background. Indicates a test failed because it caused an error.
+- Error: "E....." with a yellow background. Indicates an unhandlable error or signal was raised and forced the test file to exit prematurely. Some tests may not have been executed.
+<!--end list-->
+### 3. Details
+If all tests pass, this section will not be printed. Otherwise, it follows "Finished executing tests". This section displays the name of any failed tests (excluding tests that may have been skipped due to an Error) as well as whether it was failed by an Exception or incorrect assertion. If failed by an Exception, the explaination of the exception is printed. If failed by an incorrect assertion, the assertion and its conditional is printed, as well as any details about the assertion. Finally, any stdout produced by that test is printed.
+### 4. Status
+This is the final section, and it either shows "All tests passed successfully." or "Some tests failed!" as a final summary of the test suite.
 
 ## Examples
 The included test/ directory can be used as an example of how to write tests with raColTest. For a more comprehensive example, see https://github.com/racoltdev/raColTest-Example-Project, which is a bare bones C++ project that includes tests written for raColTest and the required project setup to get raColTest to function correctly.
