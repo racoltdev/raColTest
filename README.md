@@ -20,11 +20,11 @@ If all tests perform as expected, run `make install` to place the raColTest exec
 ### Build
 A test suite must be built according to a particular schema that the test runner expects to encounter. The included build system is capable of functioning with many other C or C++ projects. <br />
 <br />
-To use your own build system, any test code should be put in a directory at project root called "test". Each file in test should be compiled into it's own executable, each of which should be placed in a directory at project root called "testbin".<br />
+To use your own build system, any test code should be put in a directory at project root called `test/`. Each file in `test/` should be compiled into it's own executable, each of which should be placed in a directory at project root called `testbin/`. <br />
 <br />
 
 ### Writing tests
-Each test file should be placed in a directory called "test" at project root. They should each have a main function with the signature `int main(int argc, char** argv)`. argv is used internally to track the name of the test file. <br />
+Each test file should be placed in a directory called `test/` at project root. They should each have a main function with the signature `int main(int argc, char** argv)`. `argv` is used internally to track the name of the test file. <br />
 <br />
 All test files must `#include lib_raColTest/macros.h` and every test must call `TEST()`, `ASSERT()`, and `END_TEST` in that order. Each test must be headed with `TEST(test_name)`, which declares needed variables and opens an exception safe testing environment. Next, write any needed test code. Following this, `ASSERT(conditional, description)`, which determines if the test has passed or failed based off of the conditional it is given, and logs test data. Any destructor code you may need should follow. Finally, a test is finalized with `END_TEST`. It is also important to note that all code between `TEST()` and `END_TEST` is within a local scope. Any values you would like to access outside of a test must be declared prior to opening the `TEST()` block. <br />
 <br />
