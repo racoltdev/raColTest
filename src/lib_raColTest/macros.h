@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <exception>
 #include <cstdlib>
+#include <cerrno>
 // TODO if i ever get multithreading running, this needs semaphores to interact with logger
 //#include <semaphore>
 
@@ -47,8 +48,9 @@
 #define ASSERT(raColTest_conditional, raColTest_details) \
 		/* Data may have been written but not made it through the buffer yet. Clear it */ \
 		if (fflush(stdout) == EOF) { \
+			int err = errno; \
 			perror("Fatal error (fflush(stdout)). raColTest is exiting this test!"); \
-			exit(-1); \
+			exit(err); \
 		} \
 		/* raColTest_pipefd[0] waits for it's write end to close to get EOF. stdout points to the same place as it's write end, so redirecting it acts like an EOF */ \
 		rCT_sys::test_handler( \

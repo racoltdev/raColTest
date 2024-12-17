@@ -26,7 +26,7 @@ std::vector<std::string> collect_tests() {
 	catch (std::filesystem::filesystem_error& e) {
 		puts(e.what());
 		puts("raColTest encountered an error. You must have a test directory");
-		exit(-1);
+		exit(2);
 	}
 }
 
@@ -68,7 +68,7 @@ void exec_file(char* path) {
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 		rCT_sys::close_handler(pipefd[1], "pipefd");
 		int status = execl(path, fname, NULL);
-		if (status < 0) {
+		if (status > 0) {
 			perror("FAIL\n\t\tFailed to execute test file" );
 			logger::log(logger::ERROR, fname, fname, "Failed to execute test file");
 		}

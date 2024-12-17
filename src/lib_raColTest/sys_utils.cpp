@@ -3,6 +3,7 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <stdlib.h>
+#include <cerrno>
 
 #define BUFF_SIZE 128
 
@@ -23,9 +24,10 @@ namespace rCT_sys {
 	}
 
 	int error_handler(int status, const char* msg) {
+		int err = errno;
 		if (status < 0) {
 			perror(msg);
-			exit(-1);
+			exit(err);
 		}
 		return status;
 	}
@@ -39,10 +41,11 @@ namespace rCT_sys {
 	}
 
 	FILE* fopen_handler(FILE* status, const char* file_name) {
+		int err = errno;
 		if (status == NULL) {
 			const char* msg = good_strcat("Failed to open ", file_name);
 			perror(msg);
-			exit(-1);
+			exit(err);
 		}
 		return status;
 	}
@@ -56,13 +59,14 @@ namespace rCT_sys {
 	}
 
 	int fflush_handler(int status, const char* file_name) {
+		int err = errno;
 		if (status == EOF) {
 			const char* msg1 = "Fatal error (fflush(";
 			const char* msg2 = good_strcat(msg1, file_name);
 			const char* msg3 = "stdout)). raColTest is exiting this test!";
 			const char* msg = good_strcat(msg2, msg3);
 			perror(msg);
-			exit(-1);
+			exit(err);
 		}
 		return status;
 	}
