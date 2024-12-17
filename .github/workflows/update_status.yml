@@ -1,0 +1,38 @@
+name: Set Status
+on: [push, pull_request]
+
+permissions:
+  statuses: write
+
+jobs:
+  set-status:
+    runs-on: ubuntu-latest
+
+    env:
+      STATUS_FILE: "./.github/status"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check status file
+        run: |
+          if [ -f "$STATUS_FILE" ]; then
+            echo "pass=$(cat $STATUS_FILE)" >> $GITHUB_ENV
+          else
+            echo "pass=false" >> $GITHUB_ENV
+          fi
+
+      - name: Set status pass
+        if: env.pass == 'pass'
+        uses: myrotvorets/set-commit-status-action@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: success
+
+      - name: Set status fail
+        if: env.pass != 'pass'
+        uses: myrotvorets/set-commit-status-action@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: failure

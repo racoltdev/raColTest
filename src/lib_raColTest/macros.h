@@ -56,6 +56,7 @@
 			"dup2(saved_stdout, STDOUT_FILENO)" \
 		); \
 		if (!(raColTest_conditional)) { \
+			/* TODO this needs to be tested on conditionals with newlines */ \
 			const char* raColTest_msg1 = "assert(" #raColTest_conditional "): ";\
 			const char* raColTest_msg = rCT_sys::good_strcat(raColTest_msg1, raColTest_details); \
 			raColTest_status = logger::FAIL; \
