@@ -37,13 +37,13 @@ $(TARGET): $(OBJECTS) $(BUILD_DIR)src/main.o
 
 $(LIB): $(LIB_OBJECTS)
 	@echo "[SO] ${@F}"
-	@$(CXX) $(LD_FLAGS) $^ -o "$@.so"
+	@$(CXX) $(LD_FLAGS) $^ -o $(BUILD)"$@.so"
 
 all: $(TARGET) $(TESTS)
 
 install: $(TARGET) $(LIB)
 	@cp $(TARGET) /usr/local/bin/$(TARGET)
-	@cp $(LIB).so /usr/lib/$(LIB).so
+	@cp $(BUILD)$(LIB).so /usr/lib/$(LIB).so
 
 uninstall:
 	rm /usr/local/bin/$(TARGET)
