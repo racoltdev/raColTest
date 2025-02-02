@@ -45,7 +45,7 @@ Headed by "Executing tests........", this section lists the local path of each t
 - `Error`: "E....." with a yellow background. Indicates an unhandlable error or signal was raised and forced the test file to exit prematurely. Some tests in that file may not have been executed.
 <!--end list-->
 ### 3. Details
-If all tests pass, this section will not be printed. Otherwise, it follows "Finished executing tests". This section displays the name of any failed tests (excluding tests that may have been skipped due to an `Error`) as well as whether it was failed by an `Exception`/`Error` or incorrect assertion. If failed by an `Exception`/`Error`, the explaination of the exception or the signal name is printed. If failed by an incorrect assertion, the assertion and its conditional is printed, as well as any details about the assertion. Finally, any stdout produced by that test is printed.
+This section follows "Finished executing tests". If all tests pass, this section will not be printed. This section displays the name of any failed tests (excluding tests that may have been skipped due to an `Error`) as well as whether it was failed by an `Exception`/`Error` or incorrect assertion. If failed by an `Exception`/`Error`, the explaination of the exception or the signal name is printed. If failed by an incorrect assertion, the assertion and its conditional is printed, as well as any details about the assertion. Finally, any stdout produced by that test is printed.
 ### 4. Status
 This is the final section, and it either shows "All tests passed successfully." or "Some tests failed!" as a final summary of the test suite. <br />
 <br />

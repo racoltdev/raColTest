@@ -1,14 +1,21 @@
 TARGET := raColTest
+LIB := lib_raColTest
+
 BUILD_DIR := build/
 SOURCE_DIR := src/
+LIB_DIR := $(SOURCE_DIR)lib_raColTest/
 TEST_DIR := test/
 TEST_BINDIR := testbin/
-CXXFLAGS := --std=c++20 -g3 -Wall -Wextra -Wpedantic -Wconversion -fPIC
 
+CXXFLAGS := --std=c++20 -g3 -Wall -Wextra -Wpedantic -Wconversion -fPIC
 CXXFLAGS += -MMD -MP -I$(SOURCE_DIR)
+LD_FLAGS := -shared
+
 THIS_MAKEFILE := $(firstword $(MAKEFILE_LIST))
+
 SOURCES != find $(SOURCE_DIR) -name '*.cpp' ! -wholename 'src/main.cpp'
 OBJECTS := ${SOURCES:%.cpp=$(BUILD_DIR)%.o}
+LIB_OBJECTS != find $(BUILD_DIR)$(LIB_DIR) -name '*.o'
 TEST_SOURCES != find $(TEST_DIR) -name '*.cpp'
 TESTS := ${TEST_SOURCES:$(TEST_DIR)%.cpp=$(TEST_BINDIR)%}
 DEPFILES := ${OBJECTS:%.o=%.d}
@@ -22,19 +29,23 @@ $(BUILD_DIR)%.o: %.cpp $(THIS_MAKEFILE)
 $(TEST_BINDIR)%: $(BUILD_DIR)$(TEST_DIR)%.o $(OBJECTS)
 	@echo "[CXX] ${@F}"
 	@mkdir -p $(TEST_BINDIR)
-	@$(CXX) $^ $(CXXFLAGS) -o $@
+	@$(CXX) $^ $(CXXFLAGS) -o "$@"
 
 $(TARGET): $(OBJECTS) $(BUILD_DIR)src/main.o
 	@echo "[LD] ${@F}"
 	@$(CXX) $^ $(CXXFLAGS) -o $(TARGET)
 
+$(LIB): $(LIB_OBJECTS)
+	@echo "[SO] ${@F}"
+	@$(CXX) $(LD_FLAGS) $^ -o "$@.so"
+
 all: $(TARGET) $(TESTS)
 
-install:
-	mv $(TARGET) /usr/bin/$(TARGET)
+install: $(TARGET) $(LIB)
+	@cp $(TARGET) /usr/local/bin/$(TARGET)
 
 uninstall:
-	rm /usr/bin/$(TARGET)
+	rm /usr/local/bin/$(TARGET)
 
 clean:
 	rm -rf $(TARGET)
