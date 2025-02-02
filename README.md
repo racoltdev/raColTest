@@ -15,6 +15,7 @@ Prerequisites:
 Run `make all` to build from source. Ensure tests are performing as expected by running `./raColTest`. Expected output: <br /> <br /> <img src="raColTest.png"/> <br /> <br />
 If all tests perform as expected, run `make install` to place the raColTest executable in your path, and the library in an accessible location. This is the only time the test runner or library should need to be built unless you would like to upgrade to a newer version. From this point on, if you have a set of tests that are built according to the [Usage/Build](#build) section, running `racoltest` in the project root directory will collect and execute those tests.<br />
 <br />
+If you would like to install either the test runner or the test library in a different location, change the `INSTALL_BINDIR` and `INSTALL_LIBDIR` variables in the makefile, respectively. The default install locations are `/usr/local/bin/` and `/usr/lib`, which should work fine on most distributions.
 
 ## Usage
 ### Build
@@ -52,4 +53,8 @@ This is the final section, and it either shows "All tests passed successfully." 
 <br />
 
 ## Examples
-The included `test/` directory can be used as an example of how to write tests with raColTest. For a more comprehensive example, see https://github.com/racoltdev/raColTest-Example-Project, which is a bare bones C++ project that includes tests written for raColTest and the required project setup to get raColTest to function correctly.
+The included `test/` directory can be used as an example of how to write tests with raColTest. For a more comprehensive example, see https://github.com/racoltdev/raColTest-Example-Project, which is a bare bones C++ project that includes tests written for raColTest and the required project setup to get raColTest to function correctly. <br />
+<br />
+
+## Uninstallation
+Run `make uninstall` from this project's root directory to completely remove the test runner and the test library from your computer. Any tests existing on your computer will no longer run.

@@ -1,5 +1,7 @@
 TARGET := raColTest
 LIB := lib_$(TARGET)
+INSTALL_BINDIR := /usr/local/bin/
+INSTALL_LIBDIR := /usr/lib/
 
 BUILD_DIR := build/
 SOURCE_DIR := src/
@@ -37,17 +39,17 @@ $(TARGET): $(OBJECTS) $(BUILD_DIR)src/main.o
 
 $(LIB): $(LIB_OBJECTS)
 	@echo "[SO] ${@F}"
-	@$(CXX) $(LD_FLAGS) $^ -o $(BUILD)"$@.so"
+	@$(CXX) $(LD_FLAGS) $^ -o $(BUILD_DIR)$@.so
 
 all: $(TARGET) $(TESTS)
 
 install: $(TARGET) $(LIB)
-	@cp $(TARGET) /usr/local/bin/$(TARGET)
-	@cp $(BUILD)$(LIB).so /usr/lib/$(LIB).so
+	@cp $(TARGET) $(INSTALL_BINDIR)$(TARGET)
+	@cp $(BUILD_DIR)$(LIB).so $(INSTALL_LIBDIR)$(LIB).so
 
 uninstall:
-	rm /usr/local/bin/$(TARGET)
-	rm /usr/lib/$(LIB).so
+	rm $(INSTALL_BINDIR)$(TARGET)
+	rm $(INSTALL_LIBDIR)$(LIB).so
 
 clean:
 	rm -rf $(TARGET)
