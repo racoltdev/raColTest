@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "lib_raColTest/sys_utils.h"
 #include "lib_raColTest/logger.h"
@@ -112,6 +113,27 @@ void exec_test(std::string& path) {
 	exec_file(test_path);
 }
 
+void produce_status(bool pass) {
+	const char* status_dir = ".github/";
+	mkdir(status_dir, 0700);
+	const char* status_path = ".github/status";
+	FILE* status_file = rCT_sys::fopen_handler( \
+		fopen(status_path, "w"), \
+		status_path \
+	);
+	if (pass) {
+		printf(GRNB "All tests passed successfully.\nBuild successful!" RESET "\n");
+		fprintf(status_file, "%s\n", "pass");
+	} else {
+		printf(REDB "Some tests failed!" RESET "\n");
+		fprintf(status_file, "%s\n", "fail");
+	}
+	rCT_sys::fclose_handler( \
+		fclose(status_file), \
+		status_path \
+	);
+}
+
 void test_runner() {
 	time_t start = time(NULL);
 	printf("Collecting tests.......\n");
@@ -122,5 +144,7 @@ void test_runner() {
 	}
 	time_t end = time(NULL);
 	printf("\nFinished executing tests\n\n");
-	logger::display(start, end);
+
+	bool pass = logger::display(start, end);
+	produce_status(pass);
 }

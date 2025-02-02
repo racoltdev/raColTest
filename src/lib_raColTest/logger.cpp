@@ -189,7 +189,7 @@ std::vector<LogLine> lines_in_range(time_t start_time, time_t end_time) {
 	return lines;
 }
 
-void logger::display(time_t start_time, time_t end_time) {
+bool logger::display(time_t start_time, time_t end_time) {
 	std::vector<LogLine> lines = lines_in_range(start_time, end_time);
 	bool show_stdout = false;
 	bool pass = true;
@@ -215,9 +215,5 @@ void logger::display(time_t start_time, time_t end_time) {
 		printf(YELB "No captured standard out-------" RESET "\n\n");
 	}
 
-	if (pass) {
-		printf(GRNB "All tests passed successfully.\nBuild successful!" RESET "\n");
-	} else {
-		printf(REDB "Some tests failed!" RESET "\n");
-	}
+	return pass;
 }

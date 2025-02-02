@@ -14,7 +14,7 @@ namespace logger {
 
 	void log(data_type msg_type, const char* test_file, const char* test_name, const char* data);
 	void log_captured_stdout(const char* test_file, const char* test_name, int std_cap_fd);
-	void display(time_t start_time, time_t end_time);
+	bool display(time_t start_time, time_t end_time);
 };
 
 #endif
