@@ -3,7 +3,7 @@ BUILD_DIR := build/
 SOURCE_DIR := src/
 TEST_DIR := test/
 TEST_BINDIR := testbin/
-CXXFLAGS := --std=c++20 -g3 -Wall -Wextra -fPIC
+CXXFLAGS := --std=c++20 -g3 -Wall -Wextra -Wpedantic -Wconversion -fPIC
 
 CXXFLAGS += -MMD -MP -I$(SOURCE_DIR)
 THIS_MAKEFILE := $(firstword $(MAKEFILE_LIST))

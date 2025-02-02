@@ -30,7 +30,7 @@ All test files must `#include lib_raColTest/macros.h` and every test must call `
 <br />
 The files under `test/` can be used as examples of test files. <br />
 <br />
-The files under `src/lib_raColTest` should be inculded in any project you would like to test, as raColTest requires them to build test executables. `src/lib_raColTest/macros.h` is the only stable interface with raColTest, but advanced users may interact with the contents of `src/lib_raColTest/logger.h` and `src/lib_raColTest/logger.cpp` if desired. <br />
+The files under `src/lib_raColTest` should be included in any project you would like to test, as raColTest requires them to build test executables. `src/lib_raColTest/macros.h` is the only stable interface with raColTest, but advanced users may interact with the contents of `src/lib_raColTest/logger.h` and `src/lib_raColTest/logger.cpp` if desired. <br />
 <br />
 
 ## Output
@@ -41,8 +41,8 @@ Headed by "Collecting tests.......", this section lists the full canonical path 
 Headed by "Executing tests........", this section lists the local path of each test executable as it is run, and status "blips" are filled in as each individual test in a file is executed. Blips are a quick indicator of how a test suite is running before it is finished. The kinds of blips are:
 - `Pass`: "p" with a green background
 - `Fail`: "F" with a red background. Indicates an incorrect assertion
-- `Exception`: "e" with a red background. Indicates a test failed because it caused an error.
-- `Error`: "E....." with a yellow background. Indicates an unhandlable error or signal was raised and forced the test file to exit prematurely. Some tests may not have been executed.
+- `Exception`: "e" with a red background. Indicates a test failed because it raised an exception.
+- `Error`: "E....." with a yellow background. Indicates an unhandlable error or signal was raised and forced the test file to exit prematurely. Some tests in that file may not have been executed.
 <!--end list-->
 ### 3. Details
 If all tests pass, this section will not be printed. Otherwise, it follows "Finished executing tests". This section displays the name of any failed tests (excluding tests that may have been skipped due to an `Error`) as well as whether it was failed by an `Exception`/`Error` or incorrect assertion. If failed by an `Exception`/`Error`, the explaination of the exception or the signal name is printed. If failed by an incorrect assertion, the assertion and its conditional is printed, as well as any details about the assertion. Finally, any stdout produced by that test is printed.
