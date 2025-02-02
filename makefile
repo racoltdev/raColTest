@@ -1,5 +1,5 @@
 TARGET := raColTest
-LIB := lib_raColTest
+LIB := lib_$(TARGET)
 
 BUILD_DIR := build/
 SOURCE_DIR := src/
@@ -43,9 +43,11 @@ all: $(TARGET) $(TESTS)
 
 install: $(TARGET) $(LIB)
 	@cp $(TARGET) /usr/local/bin/$(TARGET)
+	@cp $(LIB).so /usr/lib/$(LIB).so
 
 uninstall:
 	rm /usr/local/bin/$(TARGET)
+	rm /usr/lib/$(LIB).so
 
 clean:
 	rm -rf $(TARGET)
