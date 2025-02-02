@@ -68,6 +68,7 @@ void exec_file(char* path) {
 		);
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 		rCT_sys::close_handler(pipefd[1], "pipefd");
+		alarm(1);
 		int status = execl(path, fname, NULL);
 		if (status > 0) {
 			perror("FAIL\n\t\tFailed to execute test file" );
@@ -77,6 +78,7 @@ void exec_file(char* path) {
 		printf("\n");
 		int status;
 		char error_blip[16] = "";
+
 		rCT_sys::error_handler( \
 			waitpid(pid, &status, 0), \
 			"\t\tFatal error while waiting for test to finish, Quiting raColTest" \
