@@ -10,6 +10,7 @@
 #include "lib_raColTest/sys_utils.h"
 #include "lib_raColTest/logger.h"
 #include "lib_raColTest/ANSI-color-codes.h"
+#include "config.h"
 
 std::vector<std::string> collect_tests() {
 	std::vector<std::string> test_names;
@@ -68,7 +69,7 @@ void exec_file(char* path) {
 		);
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 		rCT_sys::close_handler(pipefd[1], "pipefd");
-		alarm(1);
+		alarm(config::timeout);
 		int status = execl(path, fname, NULL);
 		if (status > 0) {
 			perror("FAIL\n\t\tFailed to execute test file" );
@@ -96,6 +97,7 @@ void exec_file(char* path) {
 			char msg[64];
 			sprintf(msg, "Test was stopped by signal: %d (%s)", WSTOPSIG(status), strsignal(WSTOPSIG (status)));
 			logger::log(logger::ERROR, fname, fname, msg);
+			// TODO figure out if I should capture stdout from sig kills
 			// logger::log(logger::STD_OUT, fname, fname, "");
 			strcpy(error_blip, YELB "E" RESET ".....");
 		}
@@ -108,9 +110,14 @@ void exec_file(char* path) {
 }
 
 void exec_test(std::string& path) {
-	const std::string test = "/test/";
+	std::string test = "/";
+	test.append(config::test_source_dir);
+	test.append("/");
 	std::string::size_type index = path.find(test);
-	path.replace(index, test.length(), "/testbin/");
+	std::string testbin = "/";
+	testbin.append(config::test_bin_dir);
+	testbin.append("/");
+	path.replace(index, test.length(), testbin);
 	int length = path.length();
 	char* test_path = path.data();
 	// Remove '.cpp'
@@ -118,25 +125,38 @@ void exec_test(std::string& path) {
 	exec_file(test_path);
 }
 
-void produce_status(bool pass) {
+void set_status_check(bool pass) {
 	const char* status_dir = ".github/";
 	mkdir(status_dir, 0700);
 	const char* status_path = ".github/status";
+
 	FILE* status_file = rCT_sys::fopen_handler( \
 		fopen(status_path, "w"), \
 		status_path \
 	);
+
 	if (pass) {
-		printf(GRNB "All tests passed successfully.\nBuild successful!" RESET "\n");
 		fprintf(status_file, "%s\n", "pass");
 	} else {
-		printf(REDB "Some tests failed!" RESET "\n");
 		fprintf(status_file, "%s\n", "fail");
 	}
+
 	rCT_sys::fclose_handler( \
 		fclose(status_file), \
 		status_path \
 	);
+}
+
+void produce_status(bool pass) {
+	if (config::enable_github_status) {
+		set_status_check(pass);
+	}
+
+	if (pass) {
+		printf(GRNB "All tests passed successfully.\nBuild successful!" RESET "\n");
+	} else {
+		printf(REDB "Some tests failed!" RESET "\n");
+	}
 }
 
 void test_runner() {

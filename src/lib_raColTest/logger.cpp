@@ -13,9 +13,12 @@
 
 #include "sys_utils.h"
 #include "ANSI-color-codes.h"
+#include "config.h"
 
 #define VERB(type) (type == logger::ERROR ? "encountered an exception:" : \
 		type == logger::FAIL ? "failed:" : \
+		type == logger::PASS ? "passed!" : \
+		type == logger::STD_OUT ? "printed!" : \
 		"UNKOWN VERB")
 
 #define DELIM ":-:"
@@ -32,7 +35,7 @@ struct LogLine {
 };
 
 const char* log_line_format = "%ld" DELIM "%s" DELIM "%d" DELIM "%s" DELIM "%s" DELIM "\n";
-const char* log_path = "project.log";
+const char* log_path = config::logfile_name;
 
 // Yes this is a custom parser because I didn't want to read a line in, and then split it, and then read the splits into LogLine
 // That's two more passes over strings than needed!
@@ -189,29 +192,74 @@ std::vector<LogLine> lines_in_range(time_t start_time, time_t end_time) {
 	return lines;
 }
 
+bool no_verbosity_handler(LogLine l, bool ignored) {
+	if (l.type < 2) {
+		return false;
+	}
+}
+
+void display_print_line(LogLine l, bool show_stdout) {
+	printf("Test \"%s\" %s %s\n", l.test_name, VERB(l.type), l.data);
+	if (show_stdout) {
+		printf(REDB "Captured stdout----------------" RESET "\n");
+	}
+}
+
+bool error_verbosity_handler(LogLine l, bool show_stdout) {
+	if (show_stdout) {
+		show_stdout = false;
+		if (l.type != logger::STD_OUT) {
+			printf(YELB "No captured standard out-------" RESET "\n\n");
+			if (l.type < 2) {
+				display_print_line(l, true);
+				show_stdout = true;
+			}
+		} else if (l.data[0] == '\0') {
+			// If stdout field is empty, don't bother printing it
+			printf(YELB "No captured standard out-------" RESET "\n\n");
+		} else {
+			printf("%s\n" YELB "End of captured stdout---------" RESET "\n\n", l.data);
+		}
+	}
+	else if (l.type < logger::PASS) {
+		display_print_line(l, true);
+		show_stdout = true;
+	}
+	return show_stdout;
+}
+
+bool full_verbosity_handler(LogLine l, bool show_stdout) {
+	if (show_stdout) {
+		if (l.type == logger::STD_OUT) {
+			printf("%s\n" YELB "End of captured stdout---------" RESET "\n\n", l.data);
+			return false;
+		} else {
+			printf(YELB "No captured standard out-------" RESET "\n\n");
+		}
+	}
+
+	show_stdout = (l.type < logger::PASS) ? true : false;
+	display_print_line(l, show_stdout);
+	return show_stdout;
+}
+
 bool logger::display(time_t start_time, time_t end_time) {
 	std::vector<LogLine> lines = lines_in_range(start_time, end_time);
-	bool show_stdout = false;
 	bool pass = true;
+	bool (*verbosity_handler) (LogLine, bool);
+	if (config::verbosity == 0) {
+		verbosity_handler = &no_verbosity_handler;
+	} else if (config::verbosity == 1) {
+		verbosity_handler = &error_verbosity_handler;
+	} else if (config::verbosity == 2) {
+		verbosity_handler = &full_verbosity_handler;
+	}
+	bool show_stdout = false;
 	for (size_t i = lines.size(); i > 0; --i) {
 		LogLine l = lines[i - 1];
-		if (show_stdout) {
-			show_stdout = false;
-			if (l.type != logger::STD_OUT) {
-				i++;
-				printf(YELB "No captured standard out-------" RESET "\n\n");
-			} else if (l.data[0] == '\0') {
-				// If stdout field is empty, don't bother printing it
-				printf(YELB "No captured standard out-------" RESET "\n\n");
-			} else {
-				printf("%s\n" YELB "End of captured stdout---------" RESET "\n\n", l.data);
-			}
-		}
-		else if (l.type < logger::PASS) {
+		show_stdout = verbosity_handler(l, show_stdout);
+		if (!show_stdout) {
 			pass = false;
-			printf("Test \"%s\" %s %s\n", l.test_name, VERB(l.type), l.data);
-			printf(REDB "Captured stdout----------------" RESET "\n");
-			show_stdout = true;
 		}
 	}
 	// In case there was no stdout and that was the last line in range
