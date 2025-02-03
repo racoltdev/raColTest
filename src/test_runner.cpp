@@ -73,6 +73,7 @@ void exec_file(char* path) {
 		if (status > 0) {
 			perror("FAIL\n\t\tFailed to execute test file" );
 			logger::log(logger::ERROR, fname, fname, "Failed to execute test file");
+			logger::log(logger::STD_OUT, fname, fname, "");
 		}
 	} else {
 		printf("\n");
@@ -88,12 +89,14 @@ void exec_file(char* path) {
 			char msg[64];
 			sprintf(msg, "Test was killed by signal: %d (%s)", WTERMSIG(status), strsignal(WTERMSIG (status)));
 			logger::log(logger::ERROR, fname, fname, msg);
+			// logger::log(logger::STD_OUT, fname, fname, "");
 			strcpy(error_blip, YELB "E" RESET ".....");
 		}
 		else if (WIFSTOPPED(status)) {
 			char msg[64];
 			sprintf(msg, "Test was stopped by signal: %d (%s)", WSTOPSIG(status), strsignal(WSTOPSIG (status)));
 			logger::log(logger::ERROR, fname, fname, msg);
+			// logger::log(logger::STD_OUT, fname, fname, "");
 			strcpy(error_blip, YELB "E" RESET ".....");
 		}
 		printf("\t\t");

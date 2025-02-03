@@ -29,6 +29,10 @@ int main(int , char** argv) {
 		ASSERT(1 == 1, "This will never fail")
 	END_TEST
 
+	TEST("Fail with empty stdout")
+		ASSERT(false, "No stdout")
+	END_TEST
+
 	//TEST("Second include")
 	//getFuncs("raColTest");
 	//const char* output = "true";

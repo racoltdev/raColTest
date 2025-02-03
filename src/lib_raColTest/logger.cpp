@@ -198,8 +198,10 @@ bool logger::display(time_t start_time, time_t end_time) {
 		if (show_stdout) {
 			show_stdout = false;
 			if (l.type != logger::STD_OUT) {
+				i++;
 				printf(YELB "No captured standard out-------" RESET "\n\n");
 			} else {
+				// TODO this should not print a new line when stdout is empty
 				printf("%s\n" YELB "End of captured stdout---------" RESET "\n\n", l.data);
 			}
 		}
