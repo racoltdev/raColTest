@@ -193,9 +193,7 @@ std::vector<LogLine> lines_in_range(time_t start_time, time_t end_time) {
 }
 
 bool no_verbosity_handler(LogLine l, bool ignored) {
-	if (l.type < 2) {
-		return false;
-	}
+	return (l.type >= 2) ? true : false;
 }
 
 void display_print_line(LogLine l, bool show_stdout) {
