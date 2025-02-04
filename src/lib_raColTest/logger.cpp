@@ -258,12 +258,12 @@ bool logger::display(time_t start_time, time_t end_time) {
 	for (size_t i = lines.size(); i > 0; --i) {
 		LogLine l = lines[i - 1];
 		show_stdout = verbosity_handler(l, show_stdout);
-		if (!show_stdout) {
+		if (show_stdout) {
 			pass = false;
 		}
 	}
 	// In case there was no stdout and that was the last line in range
-	if (show_stdout) {
+	if (show_stdout && config::verbosity > 0) {
 		printf(YELB "No captured standard out-------" RESET "\n\n");
 	}
 

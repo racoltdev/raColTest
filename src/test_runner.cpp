@@ -15,7 +15,8 @@
 std::vector<std::string> collect_tests() {
 	std::vector<std::string> test_names;
 	try {
-		for (const auto& entry : std::filesystem::directory_iterator("test")) {
+		const char* dirname = config::test_source_dir;
+		for (const auto& entry : std::filesystem::directory_iterator(dirname)) {
 			const std::string p = std::filesystem::absolute(entry.path());
 			test_names.push_back(p);
 			printf("\tCollected %s\n", p.c_str());
