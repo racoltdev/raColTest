@@ -35,7 +35,7 @@ struct LogLine {
 };
 
 const char* log_line_format = "%ld" DELIM "%s" DELIM "%d" DELIM "%s" DELIM "%s" DELIM "\n";
-const char* log_path = config::logfile_name;
+const char* log_path = config::logfile_name();
 
 // Yes this is a custom parser because I didn't want to read a line in, and then split it, and then read the splits into LogLine
 // That's two more passes over strings than needed!
@@ -247,11 +247,11 @@ bool logger::display(time_t start_time, time_t end_time) {
 	std::vector<LogLine> lines = lines_in_range(start_time, end_time);
 	bool pass = true;
 	bool (*verbosity_handler) (LogLine, bool);
-	if (config::verbosity == 0) {
+	if (config::verbosity() == 0) {
 		verbosity_handler = &no_verbosity_handler;
-	} else if (config::verbosity == 1) {
+	} else if (config::verbosity() == 1) {
 		verbosity_handler = &error_verbosity_handler;
-	} else if (config::verbosity == 2) {
+	} else if (config::verbosity() == 2) {
 		verbosity_handler = &full_verbosity_handler;
 	}
 	bool show_stdout = false;
@@ -263,7 +263,7 @@ bool logger::display(time_t start_time, time_t end_time) {
 		}
 	}
 	// In case there was no stdout and that was the last line in range
-	if (show_stdout && config::verbosity > 0) {
+	if (show_stdout && config::verbosity() > 0) {
 		printf(YELB "No captured standard out-------" RESET "\n\n");
 	}
 

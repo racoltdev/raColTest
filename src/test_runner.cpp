@@ -15,7 +15,7 @@
 std::vector<std::string> collect_tests() {
 	std::vector<std::string> test_names;
 	try {
-		const char* dirname = config::test_source_dir;
+		const char* dirname = config::test_source_dir();
 		for (const auto& entry : std::filesystem::directory_iterator(dirname)) {
 			const std::string p = std::filesystem::absolute(entry.path());
 			test_names.push_back(p);
@@ -70,7 +70,7 @@ void exec_file(char* path) {
 		);
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 		rCT_sys::close_handler(pipefd[1], "pipefd");
-		alarm(config::timeout);
+		alarm(config::timeout());
 		int status = execl(path, fname, NULL);
 		if (status > 0) {
 			perror("FAIL\n\t\tFailed to execute test file" );
@@ -112,11 +112,11 @@ void exec_file(char* path) {
 
 void exec_test(std::string& path) {
 	std::string test = "/";
-	test.append(config::test_source_dir);
+	test.append(config::test_source_dir());
 	test.append("/");
 	std::string::size_type index = path.find(test);
 	std::string testbin = "/";
-	testbin.append(config::test_bin_dir);
+	testbin.append(config::test_bin_dir());
 	testbin.append("/");
 	path.replace(index, test.length(), testbin);
 	int length = path.length();
@@ -149,7 +149,7 @@ void set_status_check(bool pass) {
 }
 
 void produce_status(bool pass) {
-	if (config::enable_github_status) {
+	if (config::enable_github_status()) {
 		set_status_check(pass);
 	}
 
