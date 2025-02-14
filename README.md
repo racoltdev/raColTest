@@ -4,7 +4,7 @@ raColTest is a unit testing library made for C++. Future updates intend to make 
 <br />
 raColTest contains two primary components: the test runner, and the test library: <br />
 The test runner can be compiled once and used across a system for any test suites a user may want. This is the `racoltest` executable that is created from building this project. <br />
-The test library must be linked to and included in any project you want to use raColTest. It is the set of files that can be found in `src/lib_raColTest/` and is compiler into a dynamically linked library. This must be compiled with the test files to produce test binaries, which the test runner will find, execute, log, and produce status reports on. <br />
+The test library must be linked to and included in any project you want to use raColTest. It is the set of files that can be found under `src/lib_raColTest/` and is compiled into a dynamically linked library. This must be linked against any test files to produce test binaries. The test runner will then find, execute, log, and produce status reports on the test binaries. <br />
 <br />
 
 ## Build from source
