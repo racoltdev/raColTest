@@ -6,6 +6,7 @@ INSTALL_LIBDIR := /usr/lib/
 BUILD_DIR := build/
 SOURCE_DIR := src/
 LIB_DIR := $(SOURCE_DIR)lib_raColTest/
+CONFIG_PATH := /etc/$(TARGET)/
 TEST_DIR := test/
 TEST_BINDIR := testbin/
 
@@ -44,12 +45,15 @@ $(LIB): $(LIB_OBJECTS)
 all: $(TARGET) $(TESTS)
 
 install: $(TARGET) $(LIB)
-	@cp $(TARGET) $(INSTALL_BINDIR)$(TARGET)
-	@cp $(BUILD_DIR)$(LIB).so $(INSTALL_LIBDIR)$(LIB).so
+	cp $(TARGET) $(INSTALL_BINDIR)$(TARGET)
+	cp $(BUILD_DIR)$(LIB).so $(INSTALL_LIBDIR)$(LIB).so
+	@mkdir -p $(CONFIG_PATH)
+	cp $(LIB_DIR)config/defaults.config $(CONFIG_PATH)
 
 uninstall:
 	rm $(INSTALL_BINDIR)$(TARGET)
 	rm $(INSTALL_LIBDIR)$(LIB).so
+	rm $(CONFIG_PATH)defaults.config
 
 clean:
 	rm -rf $(TARGET)

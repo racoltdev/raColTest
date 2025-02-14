@@ -13,7 +13,7 @@
 
 #include "sys_utils.h"
 #include "ANSI-color-codes.h"
-#include "config.h"
+#include "config/config.h"
 
 #define VERB(type) (type == logger::ERROR ? "encountered an exception:" : \
 		type == logger::FAIL ? "failed:" : \
