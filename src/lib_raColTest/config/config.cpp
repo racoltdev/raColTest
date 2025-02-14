@@ -8,31 +8,35 @@
 
 #include "scl/SCL.hpp"
 
-#define DEFAULT_CONFIG_PATH "/etc/raColTest/defaults.config"
-#define LOCAL_CONFIG_PATH "raColTest.config"
-#define GLOBAL_CONFIG_PATH "~/.config/raColTest/raColTest.config"
-
 enum config_source {UNDEF, DEFAULT, LOCAL, GLOBAL};
 static config_source CONFIG_SOURCE = UNDEF;
 
-config_source find_config() {
-	if (access(LOCAL_CONFIG_PATH, F_OK) == 0) {
-		return LOCAL;
-	} else if (access(GLOBAL_CONFIG_PATH, F_OK) == 0) {
-		return GLOBAL;
-	} else {
-		return DEFAULT;
-	}
+void set_to_env(const char** path, const char* var_name, const char* default_value) {
+	char* var = getenv(var_name);
+	*path = (var == NULL) ? default_value : var;
 }
 
 void get_config_file(const char** config_path) {
+	const char* default_config_path;
+	const char* local_config_path;
+	const char* global_config_path;
+	set_to_env(&default_config_path, "RACOLTEST_DEFAULT_CONFIG_PATH", "/etc/raColTest/defaults.config");
+	set_to_env(&local_config_path, "RACOLTEST_LOCAL_CONFIG_PATH", "raColTest.config");
+	set_to_env(&global_config_path, "RACOLTEST_GLOBAL_CONFIG_PATH", "~/.config/raColTest/raColTest.config");
+
 	if (CONFIG_SOURCE == UNDEF) {
-		CONFIG_SOURCE = find_config();
+		if (access(local_config_path, F_OK) == 0) {
+			CONFIG_SOURCE = LOCAL;
+		} else if (access(global_config_path, F_OK) == 0) {
+			CONFIG_SOURCE = GLOBAL;
+		} else {
+			CONFIG_SOURCE = DEFAULT;
+		}
 	}
 
 	switch(CONFIG_SOURCE) {
 		case DEFAULT:
-			*config_path = DEFAULT_CONFIG_PATH;
+			*config_path = default_config_path;
 			char err_msg[256];
 			sprintf(err_msg, "\n\tConfig file not found in expected location: %s\n\tMake sure raColTest has been installed with `make install`.", *config_path);
 			if (access(*config_path, F_OK) != 0) {
@@ -40,10 +44,10 @@ void get_config_file(const char** config_path) {
 			}
 			break;
 		case LOCAL:
-			*config_path = LOCAL_CONFIG_PATH;
+			*config_path = local_config_path;
 			break;
 		case GLOBAL:
-			*config_path = GLOBAL_CONFIG_PATH;
+			*config_path = global_config_path;
 			break;
 		default:
 			break;
