@@ -22,7 +22,7 @@ If you would like to install either the test runner or the test library in a dif
 A test suite must be built according to a particular schema that the test runner expects to encounter. The makefile in the [example project](https://github.com/racoltdev/raColTest-Example-Project) can be used to build your own projects with raColTest with minimal editing.<br />
 To use the premade build system, you will need an `include/` directory in your project root which contains all of the header files located in `src/lib_raColTest/` of this repository. <br />
 <br />
-To use your own build system, any test code should be put in a directory at project root called `test/`. Each file in `test/` should be compiled into it's own executable, each of which should be placed in a directory at project root called `testbin/`. <br />
+To use your own build system, any test code should be put in a directory at project root called `test/`. Each file in `test/` should be compiled into it's own executable, each of which should be placed in a directory at project root called `testbin/`. The header files found within `src/lib_raColTest` must be included while compiling objects. Test binaries must be linked agains `lib_raColTest.so`. <br />
 <br />
 
 ### Writing tests
@@ -33,6 +33,31 @@ All test files must `#include macros.h` and every test must call `TEST()`, `ASSE
 The files under `test/` can be used as examples of test files. <br />
 <br />
 The header files under `src/lib_raColTest` should be included in any project you would like to test, as raColTest requires them to build test executables. `src/lib_raColTest/macros.h` is the only stable interface with raColTest. <br />
+<br />
+
+### Configuration
+raColTest supports the use of configuration files and a few configuration options. <br />
+| Option Name | Data Type | Description |
+| --- | --- | --- |
+| logfile_name | string | Where test logs should be written to |
+| timeout | int | How long a test can run before it is automatically stopped in seconds |
+| test_source_dir | string | Where the library should search for test source files |
+| test_bin_dir | string | Where the library should search for test executable files |
+| enable_github_status | bool | Whether to automatically update .github/status based on test completion |
+| verbosity | int | How much information to print to console. 0 is minimal. 1 prints only failing tests. 2 prints all tests |
+
+raColTest will automatically search for 3 different locations for configuration files and choose the first one it finds. It searches in the following order: <br />
+| name | default path | environment variable |
+| --- | --- | --- |
+| local | `$(pwd)/raColTest.config` | `$RACOLTEST_LOCAL_CONFIG_PATH` |
+| global | `$(XDG_CONFIG_HOME)/raColTest/raColTest.config` | `$RACOLTEST_GLOBAL_CONFIG_PATH` |
+| default | `/etc/raColTest/defaults.config` | `$RACOLTEST_DEFAULT_CONFIG_PATH` |
+
+Note: If `$(XDG_CONFIG_HOME)` is not set, global instead searches `~/raColTest/raColTest.config`. <br />
+Each of these locations can be modified by setting the corresponding environment variable on your system. <br />
+<br />
+For information on the config format used, see https://github.com/WizardCarter/simple-config-library. <br />
+Warning: Invalid config files may not produce exceptions. If something isn't working as expected, double check the config file is correct. <br />
 <br />
 
 ## Output
@@ -57,4 +82,8 @@ The included `test/` directory can be used as an example of how to write tests w
 <br />
 
 ## Uninstallation
-Run `make uninstall` from this project's root directory to completely remove the test runner and the test library from your computer. Any tests existing on your computer will no longer run.
+Run `make uninstall` from this project's root directory to completely remove the test runner and the test library from your computer. Any tests existing on your computer will no longer run. <br />
+<br />
+
+## Acknowldgements
+raColTest uses [simple-config-library by WizardCarter](https://github.com/WizardCarter/simple-config-library) to handle configuration file parsing. README and LICENSE for simple-config-library is included under `src/lib_raColTest/config/slc`.
