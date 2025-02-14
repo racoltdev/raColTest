@@ -20,9 +20,18 @@ void get_config_file(const char** config_path) {
 	const char* default_config_path;
 	const char* local_config_path;
 	const char* global_config_path;
+
+	const char* xdg_config = getenv("XDG_CONFIG_HOME");
+	char default_global_config[64];
+	if (xdg_config != NULL) {
+		sprintf(default_global_config, "%s/raColTest.config", xdg_config);
+	} else {
+		sprintf(default_global_config, "~/.config/raColTest.config");
+	}
+
 	set_to_env(&default_config_path, "RACOLTEST_DEFAULT_CONFIG_PATH", "/etc/raColTest/defaults.config");
 	set_to_env(&local_config_path, "RACOLTEST_LOCAL_CONFIG_PATH", "raColTest.config");
-	set_to_env(&global_config_path, "RACOLTEST_GLOBAL_CONFIG_PATH", "~/.config/raColTest/raColTest.config");
+	set_to_env(&global_config_path, "RACOLTEST_GLOBAL_CONFIG_PATH", default_global_config);
 
 	if (CONFIG_SOURCE == UNDEF) {
 		if (access(local_config_path, F_OK) == 0) {
