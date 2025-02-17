@@ -35,11 +35,11 @@ std::vector<std::string> collect_tests() {
 
 char* isolate_fname(char* path, int parents) {
 	int children = 0;
-	size_t fname_start = 0;
-	size_t path_len = strlen(path);
+	long int fname_start = 0;
+	long int path_len = strlen(path);
 	char delim = '/';
 	// Always safe to start search at [-2]
-	for (int i = path_len - 2; i >= 0; i--) {
+	for (long int i = path_len - 2; i >= 0; i--) {
 		if (path[i] == delim) {
 			fname_start = i + 1;
 			if (++children == parents) {
@@ -54,7 +54,7 @@ char* isolate_fname(char* path, int parents) {
 }
 
 void exec_file(char* path) {
-	// Normally I should free this, but this execution env gets wiped in the next line anyways
+	// TODO update this for nested/subdir tests
 	char* fname = isolate_fname(path, 2);
 	fflush(stdout);
 	printf("\tExecuting %s.........", fname);
@@ -108,6 +108,7 @@ void exec_file(char* path) {
 		printf("\n");
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 	}
+	free(fname);
 }
 
 void exec_test(std::string& path) {
@@ -119,7 +120,7 @@ void exec_test(std::string& path) {
 	testbin.append(config::test_bin_dir());
 	testbin.append("/");
 	path.replace(index, test.length(), testbin);
-	int length = path.length();
+	size_t length = path.length();
 	char* test_path = path.data();
 	// Remove '.cpp'
 	test_path[length - 4] = '\0';

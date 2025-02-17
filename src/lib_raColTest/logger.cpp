@@ -40,7 +40,8 @@ const char* log_path = config::logfile_name();
 // Yes this is a custom parser because I didn't want to read a line in, and then split it, and then read the splits into LogLine
 // That's two more passes over strings than needed!
 char next_char(FILE* log_file) {
-	char c = fgetc(log_file);
+	// Checking for EOF is effectively done in deserialize_line with (c > 0)
+	char c = (char) fgetc(log_file);
 	// If delim not encounterd
 	if (c != DELIM[0]) {
 		return c;
@@ -74,7 +75,7 @@ void map_field_to_line(LogLine* line, const char* field, short num) {
 // TODO stdout_cap_file will have newlines, but I don't want to move to the next line yet. Figure that out
 LogLine deserialize_line(FILE* log_file) {
 	LogLine output;
-	int field_num = 0;
+	short field_num = 0;
 	std::string field;
 	while (field_num < 5) {
 		char c = next_char(log_file);
@@ -150,15 +151,19 @@ void logger::log(logger::data_type msg_type, const char* test_file, const char* 
 }
 
 void logger::log_captured_stdout(const char* test_file, const char* test_name, int stdout_cap_fd) {
-	size_t buff_cap = BUFF_SIZE;
+	// Cap read to only ever reading int size
+	int buff_cap = BUFF_SIZE;
 	char* buff = (char*) malloc(buff_cap * sizeof(char));
 	size_t buff_size = 0;
-	size_t l = 0;
+	int l = 0;
 	do {
+
 		l = rCT_sys::error_handler( \
-			read(stdout_cap_fd, buff, buff_cap), \
+			/* Size cap to int makes this a safe type cast */ \
+			(int) read(stdout_cap_fd, buff, buff_cap), \
 			"Could not read() from stdout_cap_fd"
 		);
+
 		buff_size += l;
 		char* temp = buff;
 		buff_cap *= 2;
@@ -192,7 +197,7 @@ std::vector<LogLine> lines_in_range(time_t start_time, time_t end_time) {
 	return lines;
 }
 
-bool no_verbosity_handler(LogLine l, bool ignored) {
+bool no_verbosity_handler(LogLine l, bool) {
 	return (l.type >= 2) ? true : false;
 }
 
