@@ -14,40 +14,27 @@
 
 #define TEST(_test_name) \
 { \
-	const char* raColTest_test_name = _test_name; \
 	int raColTest_pipefd[2]; \
-	int raColTest_saved_stdout = open_test_pipe(raColTest_pipefd); \
-	logger::data_type raColTest_status = logger::ERROR; \
+	rCT_test::TestContext raColTest_context = rCT_test::open_test_pipe(raColTest_pipefd); \
+	raColTest_context.test_name = _test_name; \
+	raColTest_context.status = logger::ERROR; \
+	raColTest_context.test_file = argv[0]; \
 	try { \
 
 #define ASSERT(raColTest_conditional, raColTest_details) \
-	/* TODO use a struct that contains all this info so I dont have to open a new scope here */ \
+	/* This bracket can cause -Wmisleading-indentation */ \
 	{ \
 		const char* msg1 = "assert(" #raColTest_conditional "):"; \
 		const char* msg = rCT_sys::good_strcat(msg1, raColTest_details); \
-		raColTest_status = build_assert( \
-				raColTest_conditional, \
-				msg, \
-				raColTest_pipefd, \
-				raColTest_test_name, \
-				raColTest_saved_stdout, \
-				argv[0] \
-			  ); \
+		rCT_test::build_assert(raColTest_conditional, msg, &raColTest_context); \
 	} \
 
 #define END_TEST \
 	} \
 	catch(std::exception& e) { \
-		end_and_catch( \
-				raColTest_saved_stdout, \
-				raColTest_status, \
-				argv[0], \
-				raColTest_test_name, \
-				raColTest_pipefd, \
-				e \
-			); \
+		rCT_test::end_and_catch(e, raColTest_context); \
 	} \
-	end_and_close(raColTest_pipefd, raColTest_status); \
+	rCT_test::end_and_close(raColTest_context); \
 }
 
 #endif

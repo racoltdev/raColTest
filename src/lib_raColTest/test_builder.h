@@ -5,8 +5,19 @@
 
 #include "logger.h"
 
-int open_test_pipe(int* pipefd);
-logger::data_type build_assert(bool pass, const char* msg, int* pipefd, const char* test_name, int saved_stdout, const char* test_file);
-void end_and_catch(int saved_stdout, logger::data_type status, const char* test_file, const char* test_name, int* pipefd, std::exception& e);
-void end_and_close(int* pipefd, logger::data_type status);
+namespace rCT_test {
+	struct TestContext {
+		const char* test_name;
+		int* pipefd;
+		int saved_stdout;
+		logger::data_type status;
+		const char* test_file;
+	};
+
+	TestContext open_test_pipe(int* pipefd);
+	void build_assert(bool pass, const char* msg, TestContext* context);
+	void end_and_catch(std::exception& e, TestContext context);
+	void end_and_close(TestContext context);
+}
+
 #endif

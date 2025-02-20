@@ -10,7 +10,7 @@
 #include "logger.h"
 #include "ANSI-color-codes.h"
 
-int open_test_pipe(int* pipefd) {
+rCT_test::TestContext rCT_test::open_test_pipe(int* pipefd) {
 	/* Make sure there's nothing in stdout */
 	rCT_sys::fflush_handler(
 		fflush(stdout),
@@ -21,7 +21,7 @@ int open_test_pipe(int* pipefd) {
 		"pipe()"
 	);
 	/* saved_stdout points to same place as stdout fileno */
-	int raColTest_saved_stdout = rCT_sys::test_handler(
+	int saved_stdout = rCT_sys::test_handler(
 		dup(STDOUT_FILENO),
 		"dup(STDOUT_FILENO)"
 	);
@@ -37,10 +37,14 @@ int open_test_pipe(int* pipefd) {
 		"close(write_pipe)"
 	);
 
-	return raColTest_saved_stdout;
+	rCT_test::TestContext context = {
+		.pipefd = pipefd,
+		.saved_stdout = saved_stdout,
+	};
+	return context;
 }
 
-logger::data_type build_assert(bool pass, const char* msg, int* pipefd, const char* test_name, int saved_stdout, const char* test_file) {
+void rCT_test::build_assert(bool pass, const char* msg, rCT_test::TestContext* context) {
 		/* Data may have been written but not made it through the buffer yet. Clear it */
 		if (fflush(stdout) == EOF) {
 			int err = errno;
@@ -50,25 +54,23 @@ logger::data_type build_assert(bool pass, const char* msg, int* pipefd, const ch
 
 		/* raColTest_pipefd[0] waits for it's write end to close to get EOF. stdout points to the same place as it's write end, so redirecting it acts like an EOF */
 		rCT_sys::test_handler(
-			dup2(saved_stdout, STDOUT_FILENO),
+			dup2(context-> saved_stdout, STDOUT_FILENO),
 			"dup2(saved_stdout, STDOUT_FILENO)"
 		);
 
-		logger::data_type status;
 		if (!pass) {
-			status = logger::FAIL;
-			logger::log(status, test_file, test_name, msg);
+			context-> status = logger::FAIL;
+			logger::log(context-> status, context-> test_file, context-> test_name, msg);
 			/* send logger the read end of the pipe */
-			logger::log_captured_stdout(test_file, test_name, pipefd[0]);
+			logger::log_captured_stdout(context-> test_file, context-> test_name, context-> pipefd[0]);
 		}
 		else {
-			status = logger::PASS;
-			logger::log(status, test_file, test_name, "\0");
+			context-> status = logger::PASS;
+			logger::log(context-> status, context-> test_file, context-> test_name, "\0");
 		}
-		return status;
 }
 
-void end_and_catch(int saved_stdout, logger::data_type status, const char* test_file, const char* test_name, int* pipefd, std::exception& e) {
+void rCT_test::end_and_catch(std::exception& e, rCT_test::TestContext context) {
 		/* Data may have been written but not made it through the buffer yet. Clear it */
 		rCT_sys::fflush_handler(
 			fflush(stdout),
@@ -76,24 +78,24 @@ void end_and_catch(int saved_stdout, logger::data_type status, const char* test_
 		);
 		/* raColTest_pipefd[0] waits for it's write end to close to get EOF. stdout points to the same place as it's write end, so redirecting it acts like an EOF */
 		rCT_sys::test_handler(
-			dup2(saved_stdout, STDOUT_FILENO),
+			dup2(context.saved_stdout, STDOUT_FILENO),
 			"dup2(saved_stdout, STDOUT_FILENO)"
 		);
-		logger::log(status, test_file, test_name, e.what());
+		logger::log(context.status, context.test_file, context.test_name, e.what());
 		/* send logger the read end of the pipe */
-		logger::log_captured_stdout(test_file, test_name, pipefd[0]);
+		logger::log_captured_stdout(context.test_file, context.test_name, context.pipefd[0]);
 }
 
-void end_and_close(int* pipefd, logger::data_type status) {
+void rCT_test::end_and_close(rCT_test::TestContext context) {
 	/* read end is no longer needed */
 	/* This should have error checking, but it borks for some reason */
-	close(pipefd[0]);
-	if (status == logger::PASS) {
+	close(context.pipefd[0]);
+	if (context.status == logger::PASS) {
 		printf(GRNB "p" RESET);
-	} else if (status == logger::FAIL) {
+	} else if (context.status == logger::FAIL) {
 		printf(REDB "F" RESET);\
 	}
-	else if (status == logger::ERROR) {
+	else if (context.status == logger::ERROR) {
 		printf(REDB "e" RESET);
 	}
 }

@@ -10,7 +10,7 @@ CONFIG_PATH := /etc/$(TARGET)/
 TEST_DIR := test/
 TEST_BINDIR := testbin/
 
-CXXFLAGS := --std=c++20 -g3 -Wall -Wextra -Wpedantic -Wconversion -fPIC
+CXXFLAGS := --std=c++20 -g3 -Wall -Wextra -Wpedantic -Wconversion -Wno-missing-field-initializers -fPIC
 CXXFLAGS += -MMD -MP -I$(SOURCE_DIR)
 LD_FLAGS := -shared
 
