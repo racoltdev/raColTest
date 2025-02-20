@@ -35,7 +35,7 @@
 	/* This affects STDOUT_FILENO and stdout */ \
 	rCT_sys::test_handler( \
 		dup2(raColTest_pipefd[1], STDOUT_FILENO), \
-		"dup2(write_pipe, STDOU_TFILENO" \
+		"dup2(write_pipe, STDOUT_FILENO)" \
 	); \
 	/* I can immediately close raColTest_pipefd[1] since stdout fileno points to the right place */ \
 	rCT_sys::test_handler( \

@@ -64,9 +64,9 @@ void exec_file(char* path) {
 	pid = rCT_sys::fork_handler();
 
 	if (pid == 0) {
-		rCT_sys::error_handler(\
-			dup2(pipefd[1], STDOUT_FILENO), \
-			"Cannot dup pipefd to stdout" \
+		rCT_sys::error_handler(
+			dup2(pipefd[1], STDOUT_FILENO),
+			"Cannot dup pipefd to stdout"
 		);
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 		rCT_sys::close_handler(pipefd[1], "pipefd");
@@ -114,12 +114,12 @@ void exec_file(char* path) {
 void exec_test(std::string& path) {
 	std::string test = "/";
 	test.append(config::test_source_dir());
-	test.append("/");
-	std::string::size_type index = path.find(test);
+	size_t index = path.find(test);
+
 	std::string testbin = "/";
 	testbin.append(config::test_bin_dir());
-	testbin.append("/");
 	path.replace(index, test.length(), testbin);
+
 	size_t length = path.length();
 	char* test_path = path.data();
 	// Remove '.cpp'
