@@ -68,14 +68,16 @@ void exec_file(char* path) {
 			dup2(pipefd[1], STDOUT_FILENO),
 			"Cannot dup pipefd to stdout"
 		);
+		// Not needed for child
 		rCT_sys::close_handler(pipefd[0], "pipefd");
+		// Can be closed since stdout sends into the pipe now
 		rCT_sys::close_handler(pipefd[1], "pipefd");
+
 		alarm(config::timeout());
 		int status = execl(path, fname, NULL);
 		if (status > 0) {
 			perror("FAIL\n\t\tFailed to execute test file" );
 			logger::log(logger::ERROR, fname, fname, "Failed to execute test file");
-			logger::log(logger::STD_OUT, fname, fname, "");
 		}
 	} else {
 		printf("\n");
@@ -86,7 +88,9 @@ void exec_file(char* path) {
 			waitpid(pid, &status, 0), \
 			"\t\tFatal error while waiting for test to finish, Quiting raColTest" \
 		);
+		// Not needed for parent
 		rCT_sys::close_handler(pipefd[1], "pipefd");
+
 		if (WIFSIGNALED(status)) {
 			char msg[64];
 			sprintf(msg, "Test was killed by signal: %d (%s)", WTERMSIG(status), strsignal(WTERMSIG (status)));

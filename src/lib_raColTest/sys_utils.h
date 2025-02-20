@@ -1,6 +1,8 @@
 #ifndef sys_utils_h
 #define sys_utils_h
 
+#include <cstdio>
+
 namespace rCT_sys {
 	// status: standard return from syscalls
 	// msg: full msg to display in case of fail status
