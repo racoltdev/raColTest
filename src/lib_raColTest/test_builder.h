@@ -8,10 +8,10 @@
 namespace rCT_test {
 	struct TestContext {
 		const char* test_name;
+		const char* test_file;
 		int* pipefd;
 		int saved_stdout;
 		logger::data_type status;
-		const char* test_file;
 	};
 
 	TestContext open_test_pipe(int* pipefd);
