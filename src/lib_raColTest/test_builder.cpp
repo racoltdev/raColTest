@@ -90,6 +90,14 @@ void rCT_test::end_and_close(rCT_test::TestContext context) {
 	/* read end is no longer needed */
 	/* This should have error checking, but it borks for some reason */
 	close(context.pipefd[0]);
+
+	static char group = 0;
+	group++;
+	if (group == 5) {
+		printf(" ");
+		group = 0;
+	}
+
 	if (context.status == logger::PASS) {
 		printf(GRNB "p" RESET);
 	} else if (context.status == logger::FAIL) {
