@@ -33,11 +33,18 @@ namespace rCT_sys {
 	}
 
 	int test_handler(int status, const char* func_name) {
-		const char* msg1 = "Fatal error (";
-		const char* msg2 = good_strcat(msg1, func_name);
-		const char* msg3 = "). raColTest is exiting this test!";
-		const char* msg = good_strcat(msg2, msg3);
-		return error_handler(status, msg);
+		int err = errno;
+		if (status < 0) {
+			const char* msg1 = "Fatal error (";
+			char* msg2 = good_strcat(msg1, func_name);
+			const char* msg3 = "). raColTest is exiting this test!";
+			char* msg = good_strcat(msg2, msg3);
+			perror(msg);
+			exit(err);
+			free(msg2);
+			free(msg);
+		}
+		return status;
 	}
 
 	FILE* fopen_handler(FILE* status, const char* file_name) {
@@ -47,6 +54,7 @@ namespace rCT_sys {
 			perror(msg);
 			exit(err);
 		}
+
 		return status;
 	}
 
@@ -72,8 +80,12 @@ namespace rCT_sys {
 	}
 
 	int io_handler(int status, const char* file_name, const char* msg) {
-		char* description = good_strcat(msg, file_name);
-		return error_handler(status, description);
+		if (status < 0) {
+			char* description = good_strcat(msg, file_name);
+			error_handler(status, description);
+			free(description);
+		}
+		return status;
 	}
 
 	int fork_handler() {
