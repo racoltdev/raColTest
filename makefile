@@ -29,6 +29,10 @@ $(BUILD_DIR)%.o: %.cpp $(THIS_MAKEFILE)
 	@echo "[CXX] ${@F}"
 	@$(CXX) $(CXXFLAGS) -c "$<" -o "$@"
 
+TEST_BIN_TREE:
+	@find test/* -type d | cut -d/ -f2- | xargs printf -- "testbin/%s\n" | xargs mkdir -p
+	@echo "[mkdir] TEST_BINDIR tree"
+
 $(TEST_BINDIR)%: $(BUILD_DIR)$(TEST_DIR)%.o $(OBJECTS)
 	@echo "[CXX] ${@F}"
 	@mkdir -p $(TEST_BINDIR)
@@ -42,7 +46,7 @@ $(LIB): $(LIB_OBJECTS)
 	@echo "[SO] ${@F}"
 	@$(CXX) $(LD_FLAGS) $^ -o $(BUILD_DIR)$@.so
 
-all: $(TARGET) $(TESTS)
+all: TEST_BIN_TREE $(TARGET) $(TESTS)
 
 install: $(TARGET) $(LIB)
 	cp $(TARGET) $(INSTALL_BINDIR)$(TARGET)

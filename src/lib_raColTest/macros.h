@@ -16,7 +16,7 @@
 	raColTest_context.test_name = _test_name; \
 	raColTest_context.status = logger::ERROR; \
 	raColTest_context.test_file = argv[0]; \
-	try { \
+	try {
 
 #define ASSERT(raColTest_conditional, raColTest_details) \
 	/* This bracket can cause -Wmisleading-indentation */ \
