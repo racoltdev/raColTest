@@ -11,16 +11,18 @@
 #include "lib_raColTest/logger.h"
 #include "lib_raColTest/ANSI-color-codes.h"
 #include "lib_raColTest/config/config.h"
+#include "lib_raColTest/files.h"
 
 std::vector<std::string> collect_tests() {
-	std::vector<std::string> test_names;
 	try {
-		const char* dirname = config::test_source_dir();
-		for (const auto& entry : std::filesystem::directory_iterator(dirname)) {
-			const std::string p = std::filesystem::absolute(entry.path());
-			test_names.push_back(p);
+		std::vector<std::string> test_names;
+		const char* root_dir = config::test_source_dir();
+		// lambda function
+		auto printer = [](std::string p) {
 			printf("\tCollected %s\n", p.c_str());
-		}
+		};
+		test_names = rCT_files::find(root_dir, printer);
+
 		if (test_names.empty()) {
 			printf("\tNo tests were collected!\n");
 		}
@@ -55,6 +57,8 @@ char* isolate_fname(char* path, int parents) {
 
 void exec_file(char* path) {
 	// TODO update this for nested/subdir tests
+	// Use rCT_files to determine test root directory
+	// Can find closest ancestor between __FILE__ and tests
 	char* fname = isolate_fname(path, 2);
 	fflush(stdout);
 	printf("\tExecuting %s.........", fname);

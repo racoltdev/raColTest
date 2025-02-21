@@ -45,4 +45,20 @@ namespace rCT_files {
 		);
 		std::filesystem::rename(temp_path, output_path);
 	}
+
+	std::vector<std::string> find(const char* root_dir, void (*func)(std::string)) {
+		std::vector<std::string> file_names;
+		for (const auto& dir : std::filesystem::recursive_directory_iterator(root_dir)) {
+			if (dir.is_directory()) {
+				for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+					if (entry.is_regular_file()) {
+						const std::string p = std::filesystem::absolute(entry.path());
+						file_names.push_back(p);
+						func(p);
+					}
+				}
+			}
+		}
+		return file_names;
+	}
 }
