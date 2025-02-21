@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <sys/wait.h>
 #include <exception>
+#include <cstdlib>
 // TODO if i ever get multithreading running, this needs semaphores to interact with logger
 //#include <semaphore>
 
@@ -25,8 +26,9 @@
 	/* This bracket can cause -Wmisleading-indentation */ \
 	{ \
 		const char* msg1 = "assert(" #raColTest_conditional "):"; \
-		const char* msg = rCT_sys::good_strcat(msg1, raColTest_details); \
-		rCT_test::build_assert(raColTest_conditional, msg, &raColTest_context); \
+		char* msg_d = rCT_sys::good_strcat(msg1, raColTest_details); \
+		rCT_test::build_assert(raColTest_conditional, msg_d, &raColTest_context); \
+		free(msg_d); \
 	} \
 
 #define END_TEST \
