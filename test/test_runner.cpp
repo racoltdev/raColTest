@@ -1,5 +1,7 @@
 #include "lib_raColTest/macros.h"
 
+#include <signal.h>
+
 int main(int, char** argv) {
 	TEST("Executes tests correctly")
 		ASSERT(true, "Failed to execute test")
