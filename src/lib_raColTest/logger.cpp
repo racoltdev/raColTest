@@ -29,9 +29,9 @@
 struct LogLine {
 	time_t time;
 	char test_file[64] = {};
-	logger::data_type type;
 	char test_name[64] = {};
 	char data[128] = {};
+	logger::data_type type;
 };
 
 const char* log_line_format = "%ld" DELIM "%s" DELIM "%d" DELIM "%s" DELIM "%s" DELIM "\n";
