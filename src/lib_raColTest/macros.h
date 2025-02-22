@@ -13,7 +13,7 @@
 { \
 	int raColTest_pipefd[2]; \
 	rCT_test::TestContext raColTest_context = rCT_test::open_test_pipe(raColTest_pipefd); \
-	raColTest_context.test_name = _test_name; \
+	raColTest_context.test_name = (char*) _test_name; \
 	raColTest_context.status = logger::ERROR; \
 	raColTest_context.test_file = argv[0]; \
 	try {

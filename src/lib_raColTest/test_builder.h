@@ -7,8 +7,8 @@
 
 namespace rCT_test {
 	struct TestContext {
-		const char* test_name;
-		const char* test_file;
+		char* test_name;
+		char* test_file;
 		int* pipefd;
 		int saved_stdout;
 		logger::data_type status;

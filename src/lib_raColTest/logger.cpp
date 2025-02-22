@@ -24,11 +24,12 @@
 #define DELIM ":-:"
 // 4kb is chosen because thats the default size of a buffer in linux kernel
 #define BUFF_SIZE 4096
+#define MAX_TEST_NAME_SIZE 64
 
 struct LogLine {
 	time_t time;
-	char test_file[64] = {};
-	char test_name[64] = {};
+	char test_file[MAX_TEST_NAME_SIZE] = {};
+	char test_name[MAX_TEST_NAME_SIZE] = {};
 	char* data;
 	logger::data_type type;
 };
@@ -63,7 +64,7 @@ char next_char(FILE* log_file) {
 
 // line.data is a heap variable that must be freed
 void map_field_to_line(LogLine* line, const char* field, short num) {
-	if     (num == 0) {line-> time = strtol(field, NULL, 0);}
+	if     (num == 0) {line-> time = strtol(field, NULL, 10);}
 	else if(num == 1) {strcpy(line-> test_file, field);}
 	else if(num == 2) {line-> type = static_cast<logger::data_type>(atoi(field));}
 	else if(num == 3) {strcpy(line-> test_name, field);}
@@ -74,7 +75,6 @@ void map_field_to_line(LogLine* line, const char* field, short num) {
 }
 
 // I'm not gonna do error checking here. Don't edit the log file!
-// TODO stdout_cap_file will have newlines, but I don't want to move to the next line yet. Figure that out
 LogLine deserialize_line(FILE* log_file) {
 	LogLine output;
 	short field_num = 0;
@@ -91,9 +91,30 @@ LogLine deserialize_line(FILE* log_file) {
 	return output;
 }
 
-// TODO Might want to sanitize input later
+logger::data_type sanitize_data_type(logger::data_type msg_type) {
+	if (msg_type < logger::ERROR || msg_type > logger::STD_OUT) {
+		puts("Error logging test. Message type must be a valid logger::data_type\n \
+				Inserting logger::ERROR");
+		msg_type = logger::ERROR;
+	}
+	return msg_type;
+}
+
+void sanitize_test_name(char* name) {
+	if (strlen(name) > MAX_TEST_NAME_SIZE) {
+		printf("Error logging test. \
+				Test file names and test names must be less than %d characters long.\n\
+				Truncating to %d characters", MAX_TEST_NAME_SIZE, MAX_TEST_NAME_SIZE);
+		name[MAX_TEST_NAME_SIZE] = '\0';
+	}
+}
+
 // TODO may need this to work with ms precision if tests are run back to back
-void logger::log(logger::data_type msg_type, const char* test_file, const char* test_name, const char* data) {
+void logger::log(logger::data_type msg_type, char* test_file, char* test_name, const char* data) {
+	msg_type = sanitize_data_type(msg_type);
+	sanitize_test_name(test_file);
+	sanitize_test_name(test_name);
+
 	const char* line_path = "line.log";
 	FILE* line_log = rCT_sys::fopen_handler(
 		fopen(line_path, "w"),
@@ -120,7 +141,7 @@ void logger::log(logger::data_type msg_type, const char* test_file, const char* 
 	}
 }
 
-void logger::log_captured_stdout(const char* test_file, const char* test_name, int stdout_cap_fd) {
+void logger::log_captured_stdout(char* test_file, char* test_name, int stdout_cap_fd) {
 	// Cap read to only ever reading int size
 	int buff_cap = BUFF_SIZE;
 	char* buff_d = (char*) malloc(buff_cap * sizeof(char));
