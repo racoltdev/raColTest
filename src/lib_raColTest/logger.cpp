@@ -25,12 +25,11 @@
 // 4kb is chosen because thats the default size of a buffer in linux kernel
 #define BUFF_SIZE 4096
 
-// TODO make data variable size
 struct LogLine {
 	time_t time;
 	char test_file[64] = {};
 	char test_name[64] = {};
-	char data[128] = {};
+	char* data;
 	logger::data_type type;
 };
 
@@ -62,12 +61,16 @@ char next_char(FILE* log_file) {
 	}
 }
 
+// line.data is a heap variable that must be freed
 void map_field_to_line(LogLine* line, const char* field, short num) {
 	if     (num == 0) {line-> time = strtol(field, NULL, 0);}
 	else if(num == 1) {strcpy(line-> test_file, field);}
 	else if(num == 2) {line-> type = static_cast<logger::data_type>(atoi(field));}
 	else if(num == 3) {strcpy(line-> test_name, field);}
-	else              {strcpy(line-> data, field);}
+	else {
+		line-> data = (char*) malloc(strlen(field) * sizeof(char));
+	    strcpy(line-> data, field);
+	}
 }
 
 // I'm not gonna do error checking here. Don't edit the log file!
@@ -232,6 +235,9 @@ bool logger::display(time_t start_time, time_t end_time) {
 			pass = false;
 		}
 		show_stdout = verbosity_printer(l, show_stdout);
+		// Finally free l.data.
+		// This is hard to track. Maybe use an arena?
+		free(l.data);
 	}
 	// In case there was no stdout and that was the last line in range
 	if (show_stdout && config::verbosity() > 0) {
