@@ -1,4 +1,5 @@
-# raColTest
+# raColTest <img src="./logo.svg" width="150"/>
+
 ## Description
 raColTest is a unit testing library made for C++. Future updates intend to make it compatible with C projects as well. Currently, it will only run on linux. Future expansion to posix and windows is planned. <br />
 <br />
