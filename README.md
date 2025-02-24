@@ -4,7 +4,7 @@
 raColTest is a unit testing library made for C++. Future updates intend to make it compatible with C projects as well. Currently, it will only run on linux. Future expansion to posix and windows is planned. <br />
 <br />
 raColTest contains two primary components: the test runner, and the test library: <br />
-The test runner can be compiled once and used across a system for any test suites a user may want. This is the `racoltest` executable that is created from building this project. <br />
+The test runner can be compiled once and used across a system for any test suites a user may want. This is the `raColTest` executable that is created from building this project. <br />
 The test library must be linked to and included in any project you want to use raColTest. It is the set of files that can be found under `src/lib_raColTest/` and is compiled into a dynamically linked library. This must be linked against any test files to produce test binaries. The test runner will then find, execute, log, and produce status reports on the test binaries. <br />
 <br />
 
@@ -14,7 +14,7 @@ Prerequisites:
 - g++
 <!-- end list -->
 Run `make all` to build from source. Ensure tests are performing as expected by running `./raColTest`. Expected output: <br /> <br /> <img src="raColTest.png"/> <br /> <br />
-If all tests perform as expected, run `make install` to place the raColTest executable in your path, and the library in an accessible location. This is the only time the test runner or library should need to be built unless you would like to upgrade to a newer version. From this point on, if you have a set of tests that are built according to the [Usage/Build](#build) section, running `racoltest` in the project root directory will collect and execute those tests.<br />
+If all tests perform as expected, run `make install` to place the raColTest executable in your path, and the library in an accessible location. This is the only time the test runner or library should need to be built unless you would like to upgrade to a newer version. From this point on, if you have a set of tests that are built according to the [Usage/Build](#build) section, running `raColTest` in the project root directory will collect and execute those tests.<br />
 <br />
 If you would like to install either the test runner or the test library in a different location, change the `INSTALL_BINDIR` and `INSTALL_LIBDIR` variables in the makefile, respectively. The default install locations are `/usr/local/bin/` and `/usr/lib`, which should work fine on most distributions.
 
