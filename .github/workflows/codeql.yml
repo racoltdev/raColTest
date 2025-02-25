@@ -12,12 +12,11 @@
 name: "CodeQL Advanced"
 
 on:
-  push:
-    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  # Run every Friday at 11:00pm
   schedule:
-    - cron: '15 17 * * 4'
+    - cron: '0 23 * * 5'
 
 jobs:
   analyze:
