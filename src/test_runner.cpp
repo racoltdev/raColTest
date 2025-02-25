@@ -35,31 +35,8 @@ std::vector<std::string> collect_tests() {
 	}
 }
 
-char* isolate_fname_d(char* path, int parents) {
-	int children = 0;
-	long int fname_start = 0;
-	long int path_len = strlen(path);
-	char delim = '/';
-	// Always safe to start search at [-2]
-	for (long int i = path_len - 2; i >= 0; i--) {
-		if (path[i] == delim) {
-			fname_start = i + 1;
-			if (++children == parents) {
-				break;
-			}
-		}
-	}
-	size_t fname_size = path_len - fname_start;
-	char* fname_d = (char*) malloc(sizeof(char) * fname_size);
-	strcpy(fname_d, path + fname_start);
-	return fname_d;
-}
-
 void exec_file(char* path) {
-	// TODO update this for nested/subdir tests
-	// Use rCT_files to determine test root directory
-	// Can find closest ancestor between __FILE__ and tests
-	char* fname_d = isolate_fname_d(path, 2);
+	char* fname_d = rCT_files::truncate_path_d(path, getenv("PWD"));
 	fflush(stdout);
 	printf("\tExecuting %s.........", fname_d);
 	pid_t pid;

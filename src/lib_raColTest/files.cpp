@@ -1,6 +1,8 @@
 #include "files.h"
 
 #include <filesystem>
+#include <cstring>
+#include <iostream>
 
 #include "sys_utils.h"
 
@@ -60,5 +62,39 @@ namespace rCT_files {
 			}
 		}
 		return file_names;
+	}
+
+	// Deprecated. Use truncate_path_d instead
+	// parents: How many parents of the base filename should be included in the returned string
+	// 0 means just the filename itself
+	char* isolate_fname_d(char* path, int parents) {
+		parents++;
+		int children = 0;
+		long int fname_start = 0;
+		long int path_len = strlen(path);
+		char delim = '/';
+		// Always safe to start search at [-2]
+		for (long int i = path_len - 2; i >= 0; i--) {
+			if (path[i] == delim) {
+				fname_start = i + 1;
+				if (++children == parents) {
+					break;
+				}
+			}
+		}
+		size_t fname_size = path_len - fname_start;
+		char* fname_d = (char*) malloc(sizeof(char) * fname_size);
+		strcpy(fname_d, path + fname_start);
+		return fname_d;
+	}
+
+	char* truncate_path_d(const char* path, const char* parent_path) {
+		char* full_path_d = realpath(path, NULL);
+		char* full_parent_d = realpath(parent_path, NULL);
+		char* ret_d = (char*) malloc(sizeof(char) * (strlen(full_path_d) - strlen(full_parent_d)) + 1);
+		strcpy(ret_d, full_path_d + strlen(full_parent_d) + 1);
+		free(full_path_d);
+		free(full_parent_d);
+		return ret_d;
 	}
 }
