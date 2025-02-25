@@ -35,7 +35,7 @@ std::vector<std::string> collect_tests() {
 	}
 }
 
-char* isolate_fname(char* path, int parents) {
+char* isolate_fname_d(char* path, int parents) {
 	int children = 0;
 	long int fname_start = 0;
 	long int path_len = strlen(path);
@@ -50,18 +50,18 @@ char* isolate_fname(char* path, int parents) {
 		}
 	}
 	size_t fname_size = path_len - fname_start;
-	char* fname = (char*) malloc(sizeof(char) * fname_size);
-	strcpy(fname, path + fname_start);
-	return fname;
+	char* fname_d = (char*) malloc(sizeof(char) * fname_size);
+	strcpy(fname_d, path + fname_start);
+	return fname_d;
 }
 
 void exec_file(char* path) {
 	// TODO update this for nested/subdir tests
 	// Use rCT_files to determine test root directory
 	// Can find closest ancestor between __FILE__ and tests
-	char* fname = isolate_fname(path, 2);
+	char* fname_d = isolate_fname_d(path, 2);
 	fflush(stdout);
-	printf("\tExecuting %s.........", fname);
+	printf("\tExecuting %s.........", fname_d);
 	pid_t pid;
 	int pipefd[2];
 	rCT_sys::pipe_handler(pipefd);
@@ -78,10 +78,10 @@ void exec_file(char* path) {
 		rCT_sys::close_handler(pipefd[1], "pipefd");
 
 		alarm(config::timeout());
-		int status = execl(path, fname, NULL);
+		int status = execl(path, fname_d, NULL);
 		if (status > 0) {
 			perror("FAIL\n\t\tFailed to execute test file" );
-			logger::log(logger::ERROR, fname, fname, "Failed to execute test file");
+			logger::log(logger::ERROR, fname_d, fname_d, "Failed to execute test file");
 		}
 	} else {
 		printf("\n");
@@ -98,16 +98,16 @@ void exec_file(char* path) {
 		if (WIFSIGNALED(status)) {
 			char msg[64];
 			sprintf(msg, "Test was killed by signal: %d (%s)", WTERMSIG(status), strsignal(WTERMSIG (status)));
-			logger::log(logger::ERROR, fname, fname, msg);
-			// logger::log(logger::STD_OUT, fname, fname, "");
+			logger::log(logger::ERROR, fname_d, fname_d, msg);
+			// logger::log(logger::STD_OUT, fname_d, fname_d, "");
 			strcpy(error_blip, YELB "E" RESET ".....");
 		}
 		else if (WIFSTOPPED(status)) {
 			char msg[64];
 			sprintf(msg, "Test was stopped by signal: %d (%s)", WSTOPSIG(status), strsignal(WSTOPSIG (status)));
-			logger::log(logger::ERROR, fname, fname, msg);
+			logger::log(logger::ERROR, fname_d, fname_d, msg);
 			// TODO figure out if I should capture stdout from sig kills
-			// logger::log(logger::STD_OUT, fname, fname, "");
+			// logger::log(logger::STD_OUT, fname_d, fname_d, "");
 			strcpy(error_blip, YELB "E" RESET ".....");
 		}
 		printf("\t\t");
@@ -116,7 +116,7 @@ void exec_file(char* path) {
 		printf("\n");
 		rCT_sys::close_handler(pipefd[0], "pipefd");
 	}
-	free(fname);
+	free(fname_d);
 }
 
 void exec_test(std::string& path) {
