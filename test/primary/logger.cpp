@@ -2,7 +2,7 @@
 
 #include "lib_raColTest/logger.h"
 
-int main(int, char** argv) {
+int main() {
 	TEST("Logger imported correctly")
 		ASSERT(true, "Dummy test")
 	END_TEST

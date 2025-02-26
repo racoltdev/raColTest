@@ -2,7 +2,7 @@
 
 #include <signal.h>
 
-int main(int, char** argv) {
+int main() {
 	TEST("Executes tests correctly")
 		ASSERT(true, "Failed to execute test")
 	END_TEST

@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <fcntl.h>
 
-int main(int , char** argv) {
+int main() {
 	TEST("Passing test")
 		printf("I'm in a passing test!\n");
 		ASSERT(1 == 1, "This should pass")
