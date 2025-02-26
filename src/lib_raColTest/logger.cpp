@@ -8,7 +8,6 @@
 #include <string.h>
 #include <string>
 #include <unistd.h>
-#include <fcntl.h>
 
 #include "sys_utils.h"
 #include "ANSI-color-codes.h"

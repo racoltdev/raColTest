@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <cerrno>
 #include <cstdlib>
-#include <string>
 #include <exception>
 
 #include "sys_utils.h"

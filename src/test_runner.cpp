@@ -1,7 +1,8 @@
+#include "test_runner.h"
+
 #include <unistd.h>
 #include <filesystem>
 #include <vector>
-#include <iostream>
 #include <string.h>
 #include <sys/wait.h>
 #include <time.h>
