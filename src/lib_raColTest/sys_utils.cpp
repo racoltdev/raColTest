@@ -8,7 +8,7 @@
 
 namespace rCT_sys {
 	char* good_strcat(const char* str1, const char* str2) {
-		char* newstr = (char*)malloc(strlen(str1) + strlen(str2) ); // might not need the +1?
+		char* newstr = (char*)malloc(strlen(str1) + strlen(str2) + 1);
 		strcpy(newstr, str1);
 		strcat(newstr, str2);
 		return newstr;
