@@ -1,6 +1,8 @@
 #ifndef TEST_RUNNER_H
 #define TEST_RUNNER_H
 
-void test_runner();
+#include <vector>
+
+void test_runner(std::vector<char*> suites);
 
 #endif

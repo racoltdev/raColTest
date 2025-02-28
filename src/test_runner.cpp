@@ -14,10 +14,16 @@
 #include "lib_raColTest/config/config.h"
 #include "lib_raColTest/files.h"
 
-std::vector<std::string> collect_tests() {
+std::vector<std::string> collect_tests(const char* suite) {
 	try {
 		std::vector<std::string> test_names;
-		const char* root_dir = config::test_source_dir();
+		const char* root_dir;
+		if (suite == NULL) {
+			root_dir = config::test_source_dir();
+		} else {
+			root_dir = suite;
+		}
+		printf("%s\n", root_dir);
 		// lambda function
 		auto printer = [](std::string p) {
 			printf("\tCollected %s\n", p.c_str());
@@ -147,10 +153,17 @@ void produce_status(bool pass) {
 	}
 }
 
-void test_runner() {
+void test_runner(std::vector<char*> suites) {
 	time_t start = time(NULL);
 	printf("Collecting tests.......\n");
-	std::vector<std::string> tests = collect_tests();
+	std::vector<std::string> tests;
+	for (char* suite : suites) {
+		std::vector<std::string> suite_tests = collect_tests(suite);
+		tests.insert(tests.end(), suite_tests.begin(), suite_tests.end());
+	}
+	if (suites.size() == 0) {
+		tests = collect_tests(NULL);
+	}
 	printf("Executing tests........\n");
 	for (std::string& test : tests) {
 		exec_test(test);
