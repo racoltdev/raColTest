@@ -23,7 +23,6 @@ std::vector<std::string> collect_tests(const char* suite) {
 		} else {
 			root_dir = suite;
 		}
-		printf("%s\n", root_dir);
 		// lambda function
 		auto printer = [](std::string p) {
 			printf("\tCollected %s\n", p.c_str());
