@@ -17,17 +17,30 @@
 std::vector<std::string> collect_tests(const char* suite) {
 	try {
 		std::vector<std::string> test_names;
-		const char* root_dir;
-		if (suite == NULL) {
-			root_dir = config::test_source_dir();
-		} else {
-			root_dir = suite;
-		}
+
 		// lambda function
 		auto printer = [](std::string p) {
 			printf("\tCollected %s\n", p.c_str());
 		};
-		test_names = rCT_files::find(root_dir, printer);
+
+		const char* config_root_dir = config::test_source_dir();
+		if (suite != NULL) {
+			char* root_dir_slash_d = (char*) "";
+			char* root_dir_d;
+			if (config_root_dir[strlen(config_root_dir) - 1] != '/') {
+				root_dir_slash_d = rCT_sys::good_strcat(config_root_dir, "/");
+				root_dir_d = rCT_sys::good_strcat(root_dir_slash_d, suite);
+				test_names = rCT_files::find(root_dir_d, printer);
+				free(root_dir_slash_d);
+				free(root_dir_d);
+			} else {
+				root_dir_d = rCT_sys::good_strcat(config_root_dir, suite);
+				test_names = rCT_files::find(root_dir_d, printer);
+				free(root_dir_d);
+			}
+		} else {
+			test_names = rCT_files::find(config_root_dir, printer);
+		}
 
 		if (test_names.empty()) {
 			printf("\tNo tests were collected!\n");
