@@ -68,7 +68,7 @@ void map_field_to_line(LogLine* line, const char* field, short num) {
 	else if(num == 2) {line-> type = static_cast<logger::data_type>(atoi(field));}
 	else if(num == 3) {strcpy(line-> test_name, field);}
 	else {
-		line-> data = (char*) malloc(strlen(field) * sizeof(char));
+		line-> data = (char*) malloc((1 + strlen(field)) * sizeof(char));
 	    strcpy(line-> data, field);
 	}
 }
