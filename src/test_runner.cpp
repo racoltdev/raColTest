@@ -14,6 +14,20 @@
 #include "lib_raColTest/config/config.h"
 #include "lib_raColTest/files.h"
 
+char* get_compound_root_d(const char* config_root_dir, const char* suite) {
+	char* root_dir_slash_d = (char*) "";
+	char* root_dir_d;
+
+	if (config_root_dir[strlen(config_root_dir) - 1] != '/') {
+		root_dir_slash_d = rCT_sys::good_strcat(config_root_dir, "/");
+		root_dir_d = rCT_sys::good_strcat(root_dir_slash_d, suite);
+		free(root_dir_slash_d);
+	} else {
+		root_dir_d = rCT_sys::good_strcat(config_root_dir, suite);
+	}
+	return root_dir_d;
+}
+
 std::vector<std::string> collect_tests(const char* suite) {
 	try {
 		std::vector<std::string> test_names;
@@ -24,22 +38,12 @@ std::vector<std::string> collect_tests(const char* suite) {
 		};
 
 		const char* config_root_dir = config::test_source_dir();
-		if (suite != NULL) {
-			char* root_dir_slash_d = (char*) "";
-			char* root_dir_d;
-			if (config_root_dir[strlen(config_root_dir) - 1] != '/') {
-				root_dir_slash_d = rCT_sys::good_strcat(config_root_dir, "/");
-				root_dir_d = rCT_sys::good_strcat(root_dir_slash_d, suite);
-				test_names = rCT_files::find(root_dir_d, printer);
-				free(root_dir_slash_d);
-				free(root_dir_d);
-			} else {
-				root_dir_d = rCT_sys::good_strcat(config_root_dir, suite);
-				test_names = rCT_files::find(root_dir_d, printer);
-				free(root_dir_d);
-			}
-		} else {
+		if (suite == NULL) {
 			test_names = rCT_files::find(config_root_dir, printer);
+		} else {
+			char* root_dir_d = get_compound_root_d(config_root_dir, suite);
+			test_names = rCT_files::find(root_dir_d, printer);
+			free(root_dir_d);
 		}
 
 		if (test_names.empty()) {
