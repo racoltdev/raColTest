@@ -87,7 +87,7 @@ namespace rCT_files {
 	char* truncate_path_d(const char* path, const char* parent_path) {
 		char* full_path_d = realpath(path, NULL);
 		char* full_parent_d = realpath(parent_path, NULL);
-		char* ret_d = (char*) malloc(sizeof(char) * (strlen(full_path_d) - strlen(full_parent_d)) + 1);
+		char* ret_d = (char*) malloc(sizeof(char) * (strlen(full_path_d) - strlen(full_parent_d) + 1));
 		strcpy(ret_d, full_path_d + strlen(full_parent_d) + 1);
 		free(full_path_d);
 		free(full_parent_d);
