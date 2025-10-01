@@ -180,8 +180,14 @@ std::vector<LogLine> lines_in_range(time_t start_time, time_t end_time) {
 		if (l.time <= end_time) {
 			lines.push_back(l);
 		}
+		else {
+			free(l.data);
+		}
 	} while(lines.back().time >= start_time);
 	fclose(log_file);
+	if (!lines.empty()) {
+		free(lines.back().data);
+	}
 	lines.pop_back();
 	return lines;
 }
