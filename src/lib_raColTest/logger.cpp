@@ -61,6 +61,9 @@ char next_char(FILE* log_file) {
 	}
 }
 
+// TODO be more careful about macro definitions. I don't want these to leak into user namespaces and linkages
+#undef DELIM
+
 // line.data is a heap variable that must be freed
 void map_field_to_line(LogLine* line, const char* field, short num) {
 	if     (num == 0) {line-> time = strtol(field, NULL, 10);}
